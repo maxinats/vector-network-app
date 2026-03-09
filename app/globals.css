@@ -22,6 +22,10 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--page-bg);
   color: var(--text);
@@ -192,6 +196,7 @@ input {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  scroll-margin-top: clamp(140px, 36vh, 320px);
 }
 
 .magic-form {
@@ -464,4 +469,10 @@ input {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
