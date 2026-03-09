@@ -45,6 +45,21 @@ for select
 to authenticated
 using (id = auth.uid());
 
+create or replace function public.is_current_user_approved()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.member_profiles as me
+    where me.id = auth.uid()
+      and me.review_status = 'approved'
+  );
+$$;
+
 drop policy if exists "Approved members can read approved profiles" on public.member_profiles;
 create policy "Approved members can read approved profiles"
 on public.member_profiles
@@ -52,12 +67,7 @@ for select
 to authenticated
 using (
   review_status = 'approved'
-  and exists (
-    select 1
-    from public.member_profiles as me
-    where me.id = auth.uid()
-      and me.review_status = 'approved'
-  )
+  and public.is_current_user_approved()
 );
 
 drop policy if exists "Users can insert own profile as pending" on public.member_profiles;
