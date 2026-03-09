@@ -5,9 +5,9 @@
   --text: #1c1c1c;
   --muted: #888888;
   --subtle: rgba(136, 136, 136, 0.6);
-  --brand: #74e1fc;
-  --brand-deep: #4fcde8;
-  --stroke: #9fbec5;
+  --brand: #0066ff;
+  --brand-deep: #0008ff;
+  --stroke: #888888;
   --card: #f2f2f2;
   --card-border: rgba(255, 255, 255, 0.1);
 }
@@ -84,7 +84,7 @@ input {
   padding: 0 16px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(90deg, #a0bdc4, #74e1fc);
+  background: #1c1c1c;
   backdrop-filter: blur(6px);
 }
 
