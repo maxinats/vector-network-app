@@ -99,7 +99,7 @@ export function HomePageSection() {
             <h1 className="hero-title">Connect With Builders</h1>
             <p className="hero-subtitle">Discover relevant people</p>
             <p className="hero-description">
-              Join a curated network of builders and early adopters.
+              A High-Signal Network for Builders and Early Teams
             </p>
 
             <div className="member-chip">
