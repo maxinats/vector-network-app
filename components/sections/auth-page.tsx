@@ -1,14 +1,20 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { MagicLinkForm } from "@/components/forms/magic-link-form";
+import {
+  buildProfileTableHint,
+  fetchCurrentMemberProfile,
+  resolveRouteByProfile,
+} from "@/lib/supabase/member-profiles";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function AuthPageSection() {
-  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const router = useRouter();
+  const [showLoginForm, setShowLoginForm] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [signOutError, setSignOutError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const supabase = useMemo(() => {
     try {
@@ -20,36 +26,61 @@ export function AuthPageSection() {
 
   useEffect(() => {
     if (!supabase) {
+      setErrorMessage(
+        "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
       setIsCheckingSession(false);
       return;
     }
 
-    const syncSession = async () => {
-      const { data } = await supabase.auth.getUser();
-      setSessionEmail(data.user?.email ?? null);
-      setIsCheckingSession(false);
+    let isActive = true;
+
+    const resolveSession = async () => {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (!isActive) {
+        return;
+      }
+
+      if (authError) {
+        setErrorMessage(authError.message);
+        setIsCheckingSession(false);
+        return;
+      }
+
+      const user = authData.user;
+      if (!user) {
+        setShowLoginForm(true);
+        setIsCheckingSession(false);
+        return;
+      }
+
+      const { profile, error } = await fetchCurrentMemberProfile(supabase, user.id);
+      if (!isActive) {
+        return;
+      }
+
+      if (error) {
+        setErrorMessage(
+          buildProfileTableHint(error) ?? "Failed to resolve your access route.",
+        );
+        setIsCheckingSession(false);
+        return;
+      }
+
+      router.replace(resolveRouteByProfile(profile));
     };
 
-    syncSession();
+    resolveSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      syncSession();
+      resolveSession();
     });
 
-    return () => listener.subscription.unsubscribe();
-  }, [supabase]);
-
-  async function handleSignOut() {
-    if (!supabase) {
-      return;
-    }
-
-    setSignOutError(null);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      setSignOutError(error.message);
-    }
-  }
+    return () => {
+      isActive = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [router, supabase]);
 
   return (
     <div className="page-shell">
@@ -60,34 +91,25 @@ export function AuthPageSection() {
           Use the same email from Vector Network to continue.
         </p>
 
+        {errorMessage ? (
+          <div className="auth-panel">
+            <p className="form-message form-message--error">{errorMessage}</p>
+          </div>
+        ) : null}
+
         {isCheckingSession ? (
           <div className="auth-panel">
-            <p>Checking current session...</p>
+            <p>Checking session and resolving your access...</p>
           </div>
         ) : null}
 
-        {!isCheckingSession && sessionEmail ? (
+        {!isCheckingSession && !showLoginForm && !errorMessage ? (
           <div className="auth-panel">
-            <p className="auth-success">Logged in as {sessionEmail}</p>
-            <div className="auth-actions">
-              <Link href="/" className="primary-button auth-button-link">
-                Back to main page
-              </Link>
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
-            </div>
-            {signOutError ? (
-              <p className="form-message form-message--error">{signOutError}</p>
-            ) : null}
+            <p>Redirecting...</p>
           </div>
         ) : null}
 
-        {!isCheckingSession && !sessionEmail ? (
+        {!isCheckingSession && showLoginForm ? (
           <div className="auth-panel">
             <MagicLinkForm mode="login" />
           </div>
