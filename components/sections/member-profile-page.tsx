@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import {
   buildConnectAction,
-  buildMemberTags,
   buildProfileLinkMap,
   getInitials,
 } from "@/lib/member-directory";
@@ -186,7 +185,6 @@ export function MemberProfilePageSection({
 
   const member = state.targetMember;
   const isCurrentUser = state.currentUser?.id === member.id;
-  const tags = buildMemberTags(member);
   const links = buildProfileLinkMap(member);
   const connect = buildConnectAction(member.contact, member.full_name);
   const meta = [member.role_title, member.country].filter(Boolean).join(" | ");
@@ -273,16 +271,6 @@ export function MemberProfilePageSection({
                 </div>
               ) : null}
             </div>
-
-            {tags.length > 0 ? (
-              <div className="member-tags">
-                {tags.map((tag) => (
-                  <span key={tag} className="member-tag">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            ) : null}
 
             <p className="member-contact">Contact: {member.contact}</p>
 
