@@ -768,7 +768,7 @@ select {
   gap: 6px;
 }
 
-.member-sections span {
+.member-section-title {
   font-size: 14px;
   font-weight: 700;
   color: var(--text);

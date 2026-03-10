@@ -450,20 +450,20 @@ function MemberDirectoryCard({
 
       <div className="member-sections">
         <div>
-          <span>What they do</span>
+          <span className="member-section-title">What they do</span>
           <ExpandableText text={member.about} collapseAt={190} />
         </div>
 
         {member.building ? (
           <div>
-            <span>Building</span>
+            <span className="member-section-title">Building</span>
             <ExpandableText text={member.building} collapseAt={170} />
           </div>
         ) : null}
 
         {member.looking_for ? (
           <div>
-            <span>Looking for</span>
+            <span className="member-section-title">Looking for</span>
             <ExpandableText text={member.looking_for} collapseAt={170} />
           </div>
         ) : null}
