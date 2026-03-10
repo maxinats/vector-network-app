@@ -69,19 +69,21 @@ export function AuthPageSection() {
     let isActive = true;
 
     const resolveSession = async () => {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
       if (!isActive) {
         return;
       }
 
-      if (authError) {
-        setErrorMessage(authError.message);
+      if (sessionError && !isSessionMissingError(sessionError.message)) {
+        setErrorMessage(sessionError.message);
         setIsCheckingSession(false);
         return;
       }
 
-      const user = authData.user;
+      const user = sessionData.session?.user ?? null;
       if (!user) {
+        setErrorMessage(null);
         setShowLoginForm(true);
         setIsCheckingSession(false);
         return;
@@ -152,4 +154,8 @@ export function AuthPageSection() {
       </main>
     </div>
   );
+}
+
+function isSessionMissingError(message: string) {
+  return message.toLowerCase().includes("auth session missing");
 }
