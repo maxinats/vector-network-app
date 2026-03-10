@@ -15,6 +15,8 @@ export function AuthPageSection() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [initialMode, setInitialMode] = useState<"login" | "signup">("login");
+  const [initialEmail, setInitialEmail] = useState("");
 
   const supabase = useMemo(() => {
     try {
@@ -44,6 +46,16 @@ export function AuthPageSection() {
     },
     [router, supabase],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    setInitialMode(params.get("mode") === "signup" ? "signup" : "login");
+    setInitialEmail(params.get("email") ?? "");
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -130,7 +142,11 @@ export function AuthPageSection() {
 
         {!isCheckingSession && showLoginForm ? (
           <div className="auth-panel">
-            <EmailPasswordAuthForm onAuthenticated={handleAuthenticated} />
+            <EmailPasswordAuthForm
+              onAuthenticated={handleAuthenticated}
+              initialMode={initialMode}
+              initialEmail={initialEmail}
+            />
           </div>
         ) : null}
       </main>

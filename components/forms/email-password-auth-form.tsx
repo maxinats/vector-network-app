@@ -12,13 +12,17 @@ type FormStatus = {
 
 type EmailPasswordAuthFormProps = {
   onAuthenticated: (userId: string) => Promise<void>;
+  initialMode?: "login" | "signup";
+  initialEmail?: string;
 };
 
 export function EmailPasswordAuthForm({
   onAuthenticated,
+  initialMode = "login",
+  initialEmail = "",
 }: EmailPasswordAuthFormProps) {
-  const [view, setView] = useState<AuthView>("login");
-  const [email, setEmail] = useState("");
+  const [view, setView] = useState<AuthView>(initialMode);
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");

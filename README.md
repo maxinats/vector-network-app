@@ -1,7 +1,7 @@
 # Early Adopters (Next.js + Supabase)
 
 Current flow:
-- `/` - landing with CTA to account page
+- `/` - landing with email input and redirect to account page
 - `/auth` - email/password sign up + email code verification + password login
 - `/onboarding` - profile form for new users
 - `/pending` - application review state (`pending` or `rejected`)
