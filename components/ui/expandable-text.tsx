@@ -14,8 +14,8 @@ export function ExpandableText({
   text,
   className,
   collapseAt = 220,
-  moreLabel = "Show more",
-  lessLabel = "Show less",
+  moreLabel = "more",
+  lessLabel = "less",
 }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const normalizedText = useMemo(() => text.replace(/\r\n/g, "\n").trimEnd(), [text]);
@@ -28,22 +28,18 @@ export function ExpandableText({
   const visibleText = isExpanded || !isLong ? normalizedText : collapsedText;
 
   return (
-    <div className="expandable-text-block">
-      <p className={className ? `${className} expandable-text` : "expandable-text"}>
-        {visibleText}
-        {!isExpanded && isLong ? "..." : ""}
-      </p>
-
+    <p className={className ? `${className} expandable-text` : "expandable-text"}>
+      <span className="expandable-text-content">{visibleText}</span>
       {isLong ? (
         <button
           type="button"
-          className="expandable-toggle"
+          className="expandable-inline-toggle"
           onClick={() => setIsExpanded((prev) => !prev)}
         >
-          {isExpanded ? lessLabel : moreLabel}
+          {isExpanded ? ` ${lessLabel}` : `... ${moreLabel}`}
         </button>
       ) : null}
-    </div>
+    </p>
   );
 }
 
