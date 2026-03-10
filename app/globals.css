@@ -777,6 +777,34 @@ input {
   color: var(--muted);
 }
 
+.expandable-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.expandable-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.expandable-toggle {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.expandable-toggle:hover {
+  color: var(--brand-deep);
+}
+
 .member-tags {
   display: flex;
   flex-wrap: wrap;

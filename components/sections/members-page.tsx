@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import {
   buildConnectAction,
   buildMemberSearchIndex,
@@ -452,20 +453,20 @@ function MemberDirectoryCard({
       <div className="member-sections">
         <div>
           <span>What they do</span>
-          <p>{member.about}</p>
+          <ExpandableText text={member.about} collapseAt={190} />
         </div>
 
         {member.building ? (
           <div>
             <span>Building</span>
-            <p>{member.building}</p>
+            <ExpandableText text={member.building} collapseAt={170} />
           </div>
         ) : null}
 
         {member.looking_for ? (
           <div>
             <span>Looking for</span>
-            <p>{member.looking_for}</p>
+            <ExpandableText text={member.looking_for} collapseAt={170} />
           </div>
         ) : null}
       </div>
