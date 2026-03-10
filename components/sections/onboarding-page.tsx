@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
+import {
+  formatContactForStorage,
+  isLikelyHttpUrl,
+  parseContactForInput,
+  type ContactInputMethod,
+  validateContactInput,
+} from "@/lib/member-directory";
 import {
   buildProfileTableHint,
   fetchCurrentMemberProfile,
@@ -30,6 +38,8 @@ type StatusState = {
   message: string;
 } | null;
 
+type FormErrors = Partial<Record<keyof FormState, string>>;
+
 const EMPTY_FORM: FormState = {
   fullName: "",
   contact: "",
@@ -46,12 +56,14 @@ const EMPTY_FORM: FormState = {
 export function OnboardingPageSection() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [contactMethod, setContactMethod] = useState<ContactInputMethod>("telegram");
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [status, setStatus] = useState<StatusState>(null);
   const [hasRejectedState, setHasRejectedState] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const supabase = useMemo(() => {
     try {
@@ -124,8 +136,11 @@ export function OnboardingPageSection() {
         return;
       }
 
+      const parsedContact = parseContactForInput(profile?.contact ?? "");
       setHasRejectedState(profile?.review_status === "rejected");
-      setForm(buildFormState(profile));
+      setContactMethod(profile ? parsedContact.method : "telegram");
+      setForm(buildFormState(profile, profile ? parsedContact.value : ""));
+      setErrors({});
       setIsLoading(false);
     };
 
@@ -143,28 +158,23 @@ export function OnboardingPageSection() {
       return;
     }
 
-    if (!form.fullName.trim() || !form.contact.trim() || !form.country.trim()) {
+    const validationErrors = validateForm(form, contactMethod);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       setStatus({
         type: "error",
-        message: "Full name, contact, and country are required.",
-      });
-      return;
-    }
-
-    if (!form.about.trim()) {
-      setStatus({
-        type: "error",
-        message: "Please describe what you do.",
+        message: "Please fix highlighted fields.",
       });
       return;
     }
 
     setIsSubmitting(true);
     setStatus(null);
+    setErrors({});
 
     const payload: MemberProfileInput = {
       full_name: form.fullName,
-      contact: form.contact,
+      contact: formatContactForStorage(contactMethod, form.contact),
       country: form.country,
       role_title: form.roleTitle,
       about: form.about,
@@ -191,6 +201,28 @@ export function OnboardingPageSection() {
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => {
+      if (!prev[key]) {
+        return prev;
+      }
+
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
+  function updateContactMethod(method: ContactInputMethod) {
+    setContactMethod(method);
+    setErrors((prev) => {
+      if (!prev.contact) {
+        return prev;
+      }
+
+      const next = { ...prev };
+      delete next.contact;
+      return next;
+    });
   }
 
   if (isLoading) {
@@ -242,77 +274,122 @@ export function OnboardingPageSection() {
               <label className="onboarding-field">
                 <span className="onboarding-label">Full name *</span>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.fullName ? "input-error" : ""}`}
                   value={form.fullName}
                   onChange={(event) => updateField("fullName", event.target.value)}
                   placeholder="Your name"
                   required
                 />
+                {errors.fullName ? (
+                  <span className="field-error">{errors.fullName}</span>
+                ) : null}
               </label>
 
-              <label className="onboarding-field">
-                <span className="onboarding-label">Contact *</span>
+              <div className="onboarding-field">
+                <span className="onboarding-label">Preferred contact *</span>
+                <div className="contact-method-switch" role="radiogroup" aria-label="Preferred contact">
+                  <button
+                    type="button"
+                    className={`contact-method-option ${contactMethod === "telegram" ? "active" : ""}`}
+                    onClick={() => updateContactMethod("telegram")}
+                  >
+                    <ContactMethodIcon method="telegram" className="contact-option-icon" />
+                    Telegram
+                  </button>
+                  <button
+                    type="button"
+                    className={`contact-method-option ${contactMethod === "email" ? "active" : ""}`}
+                    onClick={() => updateContactMethod("email")}
+                  >
+                    <ContactMethodIcon method="email" className="contact-option-icon" />
+                    Email
+                  </button>
+                </div>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.contact ? "input-error" : ""}`}
                   value={form.contact}
                   onChange={(event) => updateField("contact", event.target.value)}
-                  placeholder="Contact: @telegram or email"
+                  placeholder={
+                    contactMethod === "telegram"
+                      ? "@telegram_username"
+                      : "your@email.com"
+                  }
                   required
                 />
-              </label>
+                {errors.contact ? (
+                  <span className="field-error">{errors.contact}</span>
+                ) : (
+                  <span className="flow-muted flow-muted--center">
+                    This will be shown as the contact button in your profile.
+                  </span>
+                )}
+              </div>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">Where are you from? *</span>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.country ? "input-error" : ""}`}
                   value={form.country}
                   onChange={(event) => updateField("country", event.target.value)}
                   placeholder="Country"
                   required
                 />
+                {errors.country ? (
+                  <span className="field-error">{errors.country}</span>
+                ) : null}
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">Role / Title</span>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.roleTitle ? "input-error" : ""}`}
                   value={form.roleTitle}
                   onChange={(event) => updateField("roleTitle", event.target.value)}
                   placeholder="e.g. Product Designer, Founder"
                 />
+                {errors.roleTitle ? (
+                  <span className="field-error">{errors.roleTitle}</span>
+                ) : null}
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">What do you do? *</span>
                 <textarea
-                  className="magic-input onboarding-textarea"
+                  className={`magic-input onboarding-textarea ${errors.about ? "input-error" : ""}`}
                   value={form.about}
                   onChange={(event) => updateField("about", event.target.value)}
                   placeholder="Tell us about your role, expertise, or what you're passionate about"
                   required
                 />
+                {errors.about ? <span className="field-error">{errors.about}</span> : null}
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">What are you building?</span>
                 <textarea
-                  className="magic-input onboarding-textarea"
+                  className={`magic-input onboarding-textarea ${errors.building ? "input-error" : ""}`}
                   value={form.building}
                   onChange={(event) => updateField("building", event.target.value)}
                   placeholder="Share what you're currently working on"
                 />
+                {errors.building ? (
+                  <span className="field-error">{errors.building}</span>
+                ) : null}
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">What are you looking for?</span>
                 <textarea
-                  className="magic-input onboarding-textarea"
+                  className={`magic-input onboarding-textarea ${errors.lookingFor ? "input-error" : ""}`}
                   value={form.lookingFor}
                   onChange={(event) =>
                     updateField("lookingFor", event.target.value)
                   }
                   placeholder="e.g. collaborators, feedback, early users, opportunities"
                 />
+                {errors.lookingFor ? (
+                  <span className="field-error">{errors.lookingFor}</span>
+                ) : null}
               </label>
 
               <div className="onboarding-group-title">Links</div>
@@ -322,11 +399,12 @@ export function OnboardingPageSection() {
                   Website / portfolio
                 </span>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.website ? "input-error" : ""}`}
                   value={form.website}
                   onChange={(event) => updateField("website", event.target.value)}
                   placeholder="https://yourwebsite.com"
                 />
+                {errors.website ? <span className="field-error">{errors.website}</span> : null}
               </label>
 
               <label className="onboarding-field">
@@ -334,11 +412,12 @@ export function OnboardingPageSection() {
                   X / Twitter
                 </span>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.twitter ? "input-error" : ""}`}
                   value={form.twitter}
                   onChange={(event) => updateField("twitter", event.target.value)}
                   placeholder="@username"
                 />
+                {errors.twitter ? <span className="field-error">{errors.twitter}</span> : null}
               </label>
 
               <label className="onboarding-field">
@@ -346,11 +425,14 @@ export function OnboardingPageSection() {
                   LinkedIn
                 </span>
                 <input
-                  className="magic-input"
+                  className={`magic-input ${errors.linkedin ? "input-error" : ""}`}
                   value={form.linkedin}
                   onChange={(event) => updateField("linkedin", event.target.value)}
                   placeholder="LinkedIn profile URL"
                 />
+                {errors.linkedin ? (
+                  <span className="field-error">{errors.linkedin}</span>
+                ) : null}
               </label>
 
               <button className="primary-button" type="submit" disabled={isSubmitting}>
@@ -384,19 +466,23 @@ export function OnboardingPageSection() {
   );
 }
 
-function buildFormState(profile: MemberProfile | null): FormState {
+function buildFormState(
+  profile: MemberProfile | null,
+  contactValue: string,
+): FormState {
   const fallbackCountry = detectCountryFromLocale();
 
   if (!profile) {
     return {
       ...EMPTY_FORM,
+      contact: contactValue,
       country: fallbackCountry,
     };
   }
 
   return {
     fullName: profile.full_name ?? "",
-    contact: profile.contact ?? "",
+    contact: contactValue,
     country: profile.country || fallbackCountry,
     roleTitle: profile.role_title ?? "",
     about: profile.about ?? "",
@@ -406,6 +492,61 @@ function buildFormState(profile: MemberProfile | null): FormState {
     twitter: profile.twitter ?? "",
     linkedin: profile.linkedin ?? "",
   };
+}
+
+function validateForm(
+  form: FormState,
+  contactMethod: ContactInputMethod,
+): FormErrors {
+  const nextErrors: FormErrors = {};
+
+  if (form.fullName.trim().length < 2) {
+    nextErrors.fullName = "Enter full name (at least 2 characters).";
+  }
+
+  const contactError = validateContactInput(contactMethod, form.contact);
+  if (contactError) {
+    nextErrors.contact = contactError;
+  }
+
+  if (form.country.trim().length < 2) {
+    nextErrors.country = "Enter your country.";
+  }
+
+  if (form.roleTitle.trim().length > 80) {
+    nextErrors.roleTitle = "Role/Title must be up to 80 characters.";
+  }
+
+  if (form.about.trim().length < 20) {
+    nextErrors.about = "Describe what you do in at least 20 characters.";
+  }
+
+  if (form.building.trim().length > 500) {
+    nextErrors.building = "Building text must be up to 500 characters.";
+  }
+
+  if (form.lookingFor.trim().length > 500) {
+    nextErrors.lookingFor = "Looking for text must be up to 500 characters.";
+  }
+
+  if (form.website.trim() && !isLikelyHttpUrl(form.website)) {
+    nextErrors.website = "Enter a valid website URL.";
+  }
+
+  if (form.linkedin.trim() && !isLikelyHttpUrl(form.linkedin)) {
+    nextErrors.linkedin = "Enter a valid LinkedIn URL.";
+  }
+
+  if (form.twitter.trim()) {
+    const normalized = form.twitter.trim();
+    const isHandle = /^@?[A-Za-z0-9_]{1,15}$/.test(normalized);
+    const isUrl = isLikelyHttpUrl(normalized);
+    if (!isHandle && !isUrl) {
+      nextErrors.twitter = "Use @username or a full profile URL.";
+    }
+  }
+
+  return nextErrors;
 }
 
 function detectCountryFromLocale() {

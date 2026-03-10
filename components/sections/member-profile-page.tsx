@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import {
   buildConnectAction,
@@ -232,8 +233,12 @@ export function MemberProfilePageSection({
                   href={connect.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="secondary-button"
+                  className="secondary-button member-action--contact"
                 >
+                  <ContactMethodIcon
+                    method={connect.method}
+                    className="contact-icon contact-icon--tiny"
+                  />
                   {connect.label}
                 </a>
               ) : null}
@@ -272,7 +277,25 @@ export function MemberProfilePageSection({
               ) : null}
             </div>
 
-            <p className="member-contact">Contact: {member.contact}</p>
+            <div className="member-contact-card">
+              <span className="member-contact-title">Contact</span>
+              {connect ? (
+                <a
+                  href={connect.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="member-contact-link"
+                >
+                  <ContactMethodIcon
+                    method={connect.method}
+                    className="contact-icon contact-icon--small"
+                  />
+                  <span>{connect.value}</span>
+                </a>
+              ) : (
+                <p className="member-contact member-contact--empty">Not provided</p>
+              )}
+            </div>
 
             {links.length > 0 ? (
               <div className="member-links">
