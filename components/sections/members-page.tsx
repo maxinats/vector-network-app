@@ -28,18 +28,12 @@ type MembersState = {
 
 type MembersFilters = {
   query: string;
-  role: string;
   location: string;
-  interests: string;
-  lookingFor: string;
 };
 
 const EMPTY_FILTERS: MembersFilters = {
   query: "",
-  role: "",
   location: "",
-  interests: "",
-  lookingFor: "",
 };
 
 export function MembersPageSection() {
@@ -159,18 +153,6 @@ export function MembersPageSection() {
     [state.members, state.currentUser],
   );
 
-  const roleOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          directoryMembers
-            .map((member) => member.role_title?.trim())
-            .filter(Boolean) as string[],
-        ),
-      ).sort((a, b) => a.localeCompare(b)),
-    [directoryMembers],
-  );
-
   const locationOptions = useMemo(
     () =>
       Array.from(
@@ -185,36 +167,17 @@ export function MembersPageSection() {
 
   const filteredMembers = useMemo(() => {
     const query = filters.query.trim().toLowerCase();
-    const role = filters.role.trim().toLowerCase();
     const location = filters.location.trim().toLowerCase();
-    const interests = filters.interests.trim().toLowerCase();
-    const lookingFor = filters.lookingFor.trim().toLowerCase();
 
     return directoryMembers.filter((member) => {
       const searchIndex = buildMemberSearchIndex(member);
-      const about = member.about.toLowerCase();
-      const building = (member.building ?? "").toLowerCase();
-      const looking = (member.looking_for ?? "").toLowerCase();
-      const roleTitle = (member.role_title ?? "").toLowerCase();
       const memberLocation = member.country.toLowerCase();
 
       if (query && !searchIndex.includes(query)) {
         return false;
       }
 
-      if (role && roleTitle !== role) {
-        return false;
-      }
-
       if (location && memberLocation !== location) {
-        return false;
-      }
-
-      if (interests && !`${about} ${building}`.includes(interests)) {
-        return false;
-      }
-
-      if (lookingFor && !looking.includes(lookingFor)) {
         return false;
       }
 
@@ -287,7 +250,7 @@ export function MembersPageSection() {
             <input
               id="members-search"
               className="magic-input members-search"
-              placeholder="Search by name, role, interests, or what people are building"
+              placeholder="Search by name, role, location, or what people are building"
               value={filters.query}
               onChange={(event) =>
                 setFilters((prev) => ({ ...prev, query: event.target.value }))
@@ -295,24 +258,6 @@ export function MembersPageSection() {
             />
 
             <div className="members-filters">
-              <label className="members-filter">
-                <span>Role</span>
-                <select
-                  className="magic-input members-select"
-                  value={filters.role}
-                  onChange={(event) =>
-                    setFilters((prev) => ({ ...prev, role: event.target.value }))
-                  }
-                >
-                  <option value="">All roles</option>
-                  {roleOptions.map((option) => (
-                    <option key={option} value={option.toLowerCase()}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
               <label className="members-filter">
                 <span>Location</span>
                 <select
@@ -333,44 +278,6 @@ export function MembersPageSection() {
                   ))}
                 </select>
               </label>
-
-              <label className="members-filter">
-                <span>Interests</span>
-                <input
-                  className="magic-input members-filter-input"
-                  placeholder="AI, design, growth..."
-                  value={filters.interests}
-                  onChange={(event) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      interests: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-
-              <label className="members-filter">
-                <span>Looking for</span>
-                <input
-                  className="magic-input members-filter-input"
-                  placeholder="feedback, users, co-founder..."
-                  value={filters.lookingFor}
-                  onChange={(event) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      lookingFor: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-
-              <button
-                type="button"
-                className="secondary-button members-clear-filters"
-                onClick={() => setFilters(EMPTY_FILTERS)}
-              >
-                Clear filters
-              </button>
             </div>
           </section>
 
