@@ -1,4 +1,4 @@
-@import url("https://fonts.cdnfonts.com/css/century-gothic");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
 
 :root {
   --page-bg: #ffffff;
@@ -29,7 +29,8 @@ html {
 body {
   background: var(--page-bg);
   color: var(--text);
-  font-family: "Century Gothic", "Avenir Next", "Segoe UI", sans-serif;
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
 }
 
 a {
@@ -38,7 +39,9 @@ a {
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
 }
 
