@@ -778,6 +778,7 @@ select {
   margin: 0;
   font-size: 14px;
   line-height: 1.45;
+  font-weight: 400;
   color: var(--text);
 }
 
@@ -785,11 +786,12 @@ select {
   margin: 0;
   font-size: inherit;
   line-height: inherit;
+  font-weight: 400;
   color: inherit;
 }
 
 .expandable-text-content {
-  font-size: 400;
+  font-weight: 400;
   white-space: pre-wrap;
   word-break: break-word;
 }
