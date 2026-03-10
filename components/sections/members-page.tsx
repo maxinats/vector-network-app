@@ -1,8 +1,15 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import {
+  buildConnectAction,
+  buildMemberSearchIndex,
+  buildMemberTags,
+  buildProfileLinkMap,
+  getInitials,
+} from "@/lib/member-directory";
 import {
   buildProfileTableHint,
   fetchApprovedMembers,
@@ -18,6 +25,22 @@ type MembersState = {
   members: MemberProfile[];
 };
 
+type MembersFilters = {
+  query: string;
+  role: string;
+  location: string;
+  interests: string;
+  lookingFor: string;
+};
+
+const EMPTY_FILTERS: MembersFilters = {
+  query: "",
+  role: "",
+  location: "",
+  interests: "",
+  lookingFor: "",
+};
+
 export function MembersPageSection() {
   const router = useRouter();
   const [state, setState] = useState<MembersState>({
@@ -26,6 +49,7 @@ export function MembersPageSection() {
     currentUser: null,
     members: [],
   });
+  const [filters, setFilters] = useState<MembersFilters>(EMPTY_FILTERS);
 
   const supabase = useMemo(() => {
     try {
@@ -74,8 +98,7 @@ export function MembersPageSection() {
           ...prev,
           isLoading: false,
           error:
-            buildProfileTableHint(profileError) ??
-            "Failed to load your profile.",
+            buildProfileTableHint(profileError) ?? "Failed to load your profile.",
         }));
         return;
       }
@@ -130,6 +153,74 @@ export function MembersPageSection() {
     router.replace("/auth");
   }
 
+  const directoryMembers = useMemo(
+    () => state.members.filter((member) => member.id !== state.currentUser?.id),
+    [state.members, state.currentUser],
+  );
+
+  const roleOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          directoryMembers
+            .map((member) => member.role_title?.trim())
+            .filter(Boolean) as string[],
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
+    [directoryMembers],
+  );
+
+  const locationOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          directoryMembers
+            .map((member) => member.country?.trim())
+            .filter(Boolean) as string[],
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
+    [directoryMembers],
+  );
+
+  const filteredMembers = useMemo(() => {
+    const query = filters.query.trim().toLowerCase();
+    const role = filters.role.trim().toLowerCase();
+    const location = filters.location.trim().toLowerCase();
+    const interests = filters.interests.trim().toLowerCase();
+    const lookingFor = filters.lookingFor.trim().toLowerCase();
+
+    return directoryMembers.filter((member) => {
+      const searchIndex = buildMemberSearchIndex(member);
+      const about = member.about.toLowerCase();
+      const building = (member.building ?? "").toLowerCase();
+      const looking = (member.looking_for ?? "").toLowerCase();
+      const roleTitle = (member.role_title ?? "").toLowerCase();
+      const memberLocation = member.country.toLowerCase();
+
+      if (query && !searchIndex.includes(query)) {
+        return false;
+      }
+
+      if (role && roleTitle !== role) {
+        return false;
+      }
+
+      if (location && memberLocation !== location) {
+        return false;
+      }
+
+      if (interests && !`${about} ${building}`.includes(interests)) {
+        return false;
+      }
+
+      if (lookingFor && !looking.includes(lookingFor)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [directoryMembers, filters]);
+
   if (state.isLoading) {
     return (
       <div className="page-shell">
@@ -161,86 +252,275 @@ export function MembersPageSection() {
     <div className="page-shell">
       <div className="page-gradient" aria-hidden="true" />
 
-      <main className="flow-shell">
-        <div className="members-head">
-          <div>
+      <div className="members-layout">
+        <header className="top-nav">
+          <div className="top-nav-inner">
+            <span className="brand">Vector Network</span>
+            <div className="members-nav-actions">
+              <Link href="/" className="join-pill">
+                Home
+              </Link>
+              <button
+                type="button"
+                className="join-pill join-pill--ghost"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="members-main">
+          <section className="members-hero">
             <h1 className="flow-title">Members</h1>
             <p className="flow-description">
-              Access granted. Browse approved profiles in the network.
+              Discover people building interesting things and connect with them.
             </p>
-          </div>
+          </section>
 
-          <div className="members-actions">
-            <Link href="/" className="secondary-button">
-              Main page
-            </Link>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={handleSignOut}
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
+          <section className="flow-card members-toolbar">
+            <label htmlFor="members-search" className="sr-only">
+              Search members
+            </label>
+            <input
+              id="members-search"
+              className="magic-input members-search"
+              placeholder="Search by name, role, interests, or what people are building"
+              value={filters.query}
+              onChange={(event) =>
+                setFilters((prev) => ({ ...prev, query: event.target.value }))
+              }
+            />
 
-        <section className="members-grid">
-          {state.members.map((member) => (
-            <article key={member.id} className="member-card">
-              <h3>{member.full_name}</h3>
+            <div className="members-filters">
+              <label className="members-filter">
+                <span>Role</span>
+                <select
+                  className="magic-input members-select"
+                  value={filters.role}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, role: event.target.value }))
+                  }
+                >
+                  <option value="">All roles</option>
+                  {roleOptions.map((option) => (
+                    <option key={option} value={option.toLowerCase()}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              <p className="member-meta">
-                {[member.role_title, member.country].filter(Boolean).join(" · ")}
-              </p>
+              <label className="members-filter">
+                <span>Location</span>
+                <select
+                  className="magic-input members-select"
+                  value={filters.location}
+                  onChange={(event) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      location: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">All locations</option>
+                  {locationOptions.map((option) => (
+                    <option key={option} value={option.toLowerCase()}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              <p className="member-about">{member.about}</p>
+              <label className="members-filter">
+                <span>Interests</span>
+                <input
+                  className="magic-input members-filter-input"
+                  placeholder="AI, design, growth..."
+                  value={filters.interests}
+                  onChange={(event) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      interests: event.target.value,
+                    }))
+                  }
+                />
+              </label>
 
-              <div className="member-extra">
-                {member.building ? (
-                  <p>
-                    <strong>Building:</strong> {member.building}
-                  </p>
-                ) : null}
-                {member.looking_for ? (
-                  <p>
-                    <strong>Looking for:</strong> {member.looking_for}
-                  </p>
-                ) : null}
+              <label className="members-filter">
+                <span>Looking for</span>
+                <input
+                  className="magic-input members-filter-input"
+                  placeholder="feedback, users, co-founder..."
+                  value={filters.lookingFor}
+                  onChange={(event) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      lookingFor: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <button
+                type="button"
+                className="secondary-button members-clear-filters"
+                onClick={() => setFilters(EMPTY_FILTERS)}
+              >
+                Clear filters
+              </button>
+            </div>
+          </section>
+
+          <p className="flow-muted">
+            Showing {filteredMembers.length} of {directoryMembers.length} member profiles.
+          </p>
+
+          <section className="members-grid">
+            {filteredMembers.length === 0 ? (
+              <article className="flow-card members-empty-state">
+                <h3>No members found</h3>
+                <p className="flow-muted">
+                  Try changing filters or clear them to see all approved members.
+                </p>
+              </article>
+            ) : (
+              filteredMembers.map((member) => (
+                <MemberDirectoryCard key={member.id} member={member} />
+              ))
+            )}
+          </section>
+
+          {state.currentUser ? (
+            <section className="flow-card my-profile-section">
+              <div className="my-profile-header">
+                <h2>My profile</h2>
+                <p className="flow-description">
+                  View and update your profile anytime.
+                </p>
               </div>
+              <MemberDirectoryCard member={state.currentUser} isCurrentUser />
+            </section>
+          ) : null}
 
-              <div className="member-links">
-                {member.website ? (
-                  <a href={normalizeLink(member.website)} target="_blank" rel="noreferrer">
-                    Website
-                  </a>
-                ) : null}
-                {member.twitter ? (
-                  <a href={normalizeLink(member.twitter)} target="_blank" rel="noreferrer">
-                    X / Twitter
-                  </a>
-                ) : null}
-                {member.linkedin ? (
-                  <a href={normalizeLink(member.linkedin)} target="_blank" rel="noreferrer">
-                    LinkedIn
-                  </a>
-                ) : null}
-              </div>
-            </article>
-          ))}
-        </section>
-      </main>
+          <footer className="footer members-footer">
+            <p>We respect your privacy. No spam, ever.</p>
+            <p>
+              <Link href="/privacy" className="inline-link">
+                Privacy Policy
+              </Link>{" "}
+              -{" "}
+              <Link href="/terms" className="inline-link">
+                Terms of Service
+              </Link>
+            </p>
+            <p className="copyright">Vector Network © 2026</p>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }
 
-function normalizeLink(linkValue: string) {
-  if (linkValue.startsWith("http://") || linkValue.startsWith("https://")) {
-    return linkValue;
-  }
+type MemberDirectoryCardProps = {
+  member: MemberProfile;
+  isCurrentUser?: boolean;
+};
 
-  if (linkValue.startsWith("@")) {
-    return `https://x.com/${linkValue.slice(1)}`;
-  }
+function MemberDirectoryCard({
+  member,
+  isCurrentUser = false,
+}: MemberDirectoryCardProps) {
+  const tags = buildMemberTags(member);
+  const links = buildProfileLinkMap(member);
+  const connect = buildConnectAction(member.contact, member.full_name);
+  const meta = [member.role_title, member.country].filter(Boolean).join(" | ");
 
-  return `https://${linkValue}`;
+  return (
+    <article
+      className={`member-directory-card ${isCurrentUser ? "member-directory-card--featured" : ""}`}
+    >
+      <div className="member-directory-head">
+        <div className="member-avatar-badge">{getInitials(member.full_name)}</div>
+        <div className="member-directory-identity">
+          <h3>{member.full_name}</h3>
+          {meta ? <p className="member-meta">{meta}</p> : null}
+        </div>
+      </div>
+
+      <div className="member-sections">
+        <div>
+          <span>What they do</span>
+          <p>{member.about}</p>
+        </div>
+
+        {member.building ? (
+          <div>
+            <span>Building</span>
+            <p>{member.building}</p>
+          </div>
+        ) : null}
+
+        {member.looking_for ? (
+          <div>
+            <span>Looking for</span>
+            <p>{member.looking_for}</p>
+          </div>
+        ) : null}
+      </div>
+
+      {tags.length > 0 ? (
+        <div className="member-tags">
+          {tags.map((tag) => (
+            <span key={tag} className="member-tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <p className="member-contact">Contact: {member.contact}</p>
+
+      {links.length > 0 ? (
+        <div className="member-links">
+          {links.map((link) => (
+            <a key={link.key} href={link.href} target="_blank" rel="noreferrer">
+              {link.label}
+            </a>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="member-actions">
+        <Link href={`/profile/${member.id}`} className="primary-button member-action">
+          {isCurrentUser ? "View my profile" : "View profile"}
+        </Link>
+
+        {isCurrentUser ? (
+          <Link href="/onboarding?edit=1" className="secondary-button member-action">
+            Edit my profile
+          </Link>
+        ) : connect ? (
+          <a
+            href={connect.href}
+            target="_blank"
+            rel="noreferrer"
+            className="secondary-button member-action"
+          >
+            {connect.label}
+          </a>
+        ) : (
+          <button
+            type="button"
+            className="secondary-button member-action member-action--disabled"
+            disabled
+          >
+            Connect
+          </button>
+        )}
+      </div>
+    </article>
+  );
 }
+

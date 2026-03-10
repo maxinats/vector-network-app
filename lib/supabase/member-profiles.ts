@@ -98,6 +98,29 @@ export async function fetchApprovedMembers(supabase: SupabaseClient) {
   };
 }
 
+export async function fetchMemberProfileById(
+  supabase: SupabaseClient,
+  profileId: string,
+) {
+  const { data, error } = await supabase
+    .from("member_profiles")
+    .select(PROFILE_COLUMNS)
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (error && error.code !== "PGRST116") {
+    return {
+      profile: null,
+      error,
+    };
+  }
+
+  return {
+    profile: (data as MemberProfile | null) ?? null,
+    error: null,
+  };
+}
+
 export function resolveRouteByProfile(profile: MemberProfile | null) {
   if (!profile) {
     return "/onboarding";

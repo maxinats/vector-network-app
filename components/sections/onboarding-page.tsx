@@ -49,6 +49,7 @@ export function OnboardingPageSection() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [status, setStatus] = useState<StatusState>(null);
   const [hasRejectedState, setHasRejectedState] = useState(false);
 
@@ -64,6 +65,9 @@ export function OnboardingPageSection() {
     let isActive = true;
 
     const initialize = async () => {
+      const editMode = isEditModeQueryEnabled();
+      setIsEditMode(editMode);
+
       if (!supabase) {
         if (isActive) {
           setStatus({
@@ -110,7 +114,7 @@ export function OnboardingPageSection() {
         return;
       }
 
-      if (profile?.review_status === "approved") {
+      if (profile?.review_status === "approved" && !editMode) {
         router.replace("/members");
         return;
       }
@@ -208,16 +212,20 @@ export function OnboardingPageSection() {
         <header className="top-nav">
           <div className="top-nav-inner">
             <span className="brand">Vector Network</span>
-            <Link href="/" className="join-pill">
-              Back on main
+            <Link href={isEditMode ? "/members" : "/"} className="join-pill">
+              {isEditMode ? "Back to members" : "Back on main"}
             </Link>
           </div>
         </header>
 
         <main className="flow-shell flow-shell--narrow">
-          <h1 className="flow-title">Create your profile</h1>
+          <h1 className="flow-title">
+            {isEditMode ? "Edit your profile" : "Create your profile"}
+          </h1>
           <p className="flow-description">
-            Join a curated network of builders and early adopters.
+            {isEditMode
+              ? "Update your profile card. Changes will be reviewed again."
+              : "Join a curated network of builders and early adopters."}
           </p>
 
           <section className="flow-card">
@@ -346,12 +354,19 @@ export function OnboardingPageSection() {
               </label>
 
               <button className="primary-button" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Create profile"}
+                {isSubmitting
+                  ? isEditMode
+                    ? "Saving..."
+                    : "Submitting..."
+                  : isEditMode
+                    ? "Save changes"
+                    : "Create profile"}
               </button>
 
               <p className="flow-muted flow-muted--center">
-                Your profile will be reviewed before becoming visible to the
-                community.
+                {isEditMode
+                  ? "After saving, your profile returns to pending review."
+                  : "Your profile will be reviewed before becoming visible to the community."}
               </p>
 
               {status ? (
@@ -410,4 +425,13 @@ function detectCountryFromLocale() {
   } catch {
     return "";
   }
+}
+
+function isEditModeQueryEnabled() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return params.get("edit") === "1";
 }
