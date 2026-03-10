@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MagicLinkForm } from "@/components/forms/magic-link-form";
 
 type FeatureIconType = "user-plus" | "link" | "globe" | "tool";
 
@@ -118,7 +117,21 @@ export function HomePageSection() {
           </section>
 
           <section id="access" className="access-section">
-            <MagicLinkForm mode="signup" />
+            <div className="flow-card">
+              <p className="safe-row">
+                Sign up with email and password, confirm by code, and join the
+                network.
+              </p>
+              <Link href="/auth" className="primary-button auth-button-link">
+                Create account
+              </Link>
+              <p className="switch-copy">
+                Already have an account?{" "}
+                <Link href="/auth" className="inline-link strong-link">
+                  Log in
+                </Link>
+              </p>
+            </div>
           </section>
 
           <section className="features-section">

@@ -428,6 +428,49 @@ input {
   letter-spacing: -0.02em;
 }
 
+.auth-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.auth-mode-button {
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--text) 18%, white);
+  background: #ffffff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.auth-mode-button.active {
+  border-color: var(--brand);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.auth-inline-button {
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  font-size: 14px;
+  align-self: center;
+}
+
+.auth-inline-button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
 .auth-description {
   margin: 0;
   color: var(--muted);

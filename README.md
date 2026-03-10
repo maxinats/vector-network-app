@@ -1,8 +1,8 @@
 # Early Adopters (Next.js + Supabase)
 
 Current flow:
-- `/` - landing + magic link access request
-- `/auth` - magic link login and auto-redirect by profile status
+- `/` - landing with CTA to account page
+- `/auth` - email/password sign up + email code verification + password login
 - `/onboarding` - profile form for new users
 - `/pending` - application review state (`pending` or `rejected`)
 - `/members` - approved members-only page
@@ -28,6 +28,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```bash
 npm run dev
 ```
+
+## Auth setup notes
+
+- Keep Email provider enabled in Supabase Auth.
+- For code-based signup confirmation, make sure confirmation email template includes `{{ .Token }}`.
+- Session persistence is handled by Supabase client (`persistSession: true`).
 
 ## Approval logic
 

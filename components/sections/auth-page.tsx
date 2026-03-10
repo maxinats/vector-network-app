@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { MagicLinkForm } from "@/components/forms/magic-link-form";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { EmailPasswordAuthForm } from "@/components/forms/email-password-auth-form";
 import {
   buildProfileTableHint,
   fetchCurrentMemberProfile,
@@ -23,6 +23,27 @@ export function AuthPageSection() {
       return null;
     }
   }, []);
+
+  const resolveUserAccess = useCallback(
+    async (userId: string) => {
+      if (!supabase) {
+        return;
+      }
+
+      const { profile, error } = await fetchCurrentMemberProfile(supabase, userId);
+      if (error) {
+        setErrorMessage(
+          buildProfileTableHint(error) ?? "Failed to resolve your access route.",
+        );
+        setShowLoginForm(true);
+        setIsCheckingSession(false);
+        return;
+      }
+
+      router.replace(resolveRouteByProfile(profile));
+    },
+    [router, supabase],
+  );
 
   useEffect(() => {
     if (!supabase) {
@@ -54,20 +75,7 @@ export function AuthPageSection() {
         return;
       }
 
-      const { profile, error } = await fetchCurrentMemberProfile(supabase, user.id);
-      if (!isActive) {
-        return;
-      }
-
-      if (error) {
-        setErrorMessage(
-          buildProfileTableHint(error) ?? "Failed to resolve your access route.",
-        );
-        setIsCheckingSession(false);
-        return;
-      }
-
-      router.replace(resolveRouteByProfile(profile));
+      await resolveUserAccess(user.id);
     };
 
     resolveSession();
@@ -80,15 +88,26 @@ export function AuthPageSection() {
       isActive = false;
       listener.subscription.unsubscribe();
     };
-  }, [router, supabase]);
+  }, [resolveUserAccess, supabase]);
+
+  const handleAuthenticated = useCallback(
+    async (userId: string) => {
+      setErrorMessage(null);
+      setShowLoginForm(false);
+      setIsCheckingSession(true);
+      await resolveUserAccess(userId);
+    },
+    [resolveUserAccess],
+  );
 
   return (
     <div className="page-shell">
       <div className="page-gradient" aria-hidden="true" />
       <main className="auth-shell">
-        <h1>Log In via Magic Link</h1>
+        <h1>Account access</h1>
         <p className="auth-description">
-          Use the same email from Vector Network to continue.
+          Sign up with email and password, confirm by code, then log in with
+          password.
         </p>
 
         {errorMessage ? (
@@ -111,7 +130,7 @@ export function AuthPageSection() {
 
         {!isCheckingSession && showLoginForm ? (
           <div className="auth-panel">
-            <MagicLinkForm mode="login" />
+            <EmailPasswordAuthForm onAuthenticated={handleAuthenticated} />
           </div>
         ) : null}
       </main>
