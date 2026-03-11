@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useI18n } from "@/components/providers/language-provider";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import { ExpandableText } from "@/components/ui/expandable-text";
@@ -16,15 +17,12 @@ import {
 import {
   buildProfileTableHint,
   fetchApprovedMembers,
-  fetchCurrentMemberProfile,
   type MemberProfile,
 } from "@/lib/supabase/member-profiles";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type MembersState = {
   isLoading: boolean;
   error: string | null;
-  currentUser: MemberProfile | null;
   members: MemberProfile[];
 };
 
@@ -41,120 +39,106 @@ const EMPTY_FILTERS: MembersFilters = {
 export function MembersPageSection() {
   const router = useRouter();
   const { t } = useI18n();
+  const {
+    status: authStatus,
+    profile: currentUser,
+    error: authError,
+    supabase,
+    signOut,
+  } = useAuth();
   const [state, setState] = useState<MembersState>({
     isLoading: true,
     error: null,
-    currentUser: null,
     members: [],
   });
   const [filters, setFilters] = useState<MembersFilters>(EMPTY_FILTERS);
 
-  const supabase = useMemo(() => {
-    try {
-      return createSupabaseBrowserClient();
-    } catch {
-      return null;
-    }
-  }, []);
-
   useEffect(() => {
+    if (authStatus === "loading") {
+      setState((prev) => (prev.isLoading ? prev : { ...prev, isLoading: true }));
+      return;
+    }
+
+    if (authStatus === "error") {
+      setState({
+        isLoading: false,
+        error:
+          authError ??
+          t("members.errors.load_profile", "Failed to load your profile."),
+        members: [],
+      });
+      return;
+    }
+
+    if (authStatus === "unauthenticated") {
+      router.replace("/auth");
+      return;
+    }
+
+    if (!currentUser) {
+      router.replace("/onboarding");
+      return;
+    }
+
+    if (currentUser.review_status !== "approved") {
+      router.replace("/pending");
+      return;
+    }
+
     if (!supabase) {
-      setState((prev) => ({
-        ...prev,
+      setState({
         isLoading: false,
         error: t(
           "members.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
         ),
-      }));
+        members: [],
+      });
       return;
     }
 
     let isActive = true;
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     const loadMembers = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!isActive) {
-        return;
-      }
-
-      const user = authData.user;
-      if (!user) {
-        router.replace("/auth");
-        return;
-      }
-
-      const { profile, error: profileError } = await fetchCurrentMemberProfile(
-        supabase,
-        user.id,
-      );
-
-      if (!isActive) {
-        return;
-      }
-
-      if (profileError) {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: buildProfileTableHint(profileError) ??
-            t("members.errors.load_profile", "Failed to load your profile."),
-        }));
-        return;
-      }
-
-      if (!profile) {
-        router.replace("/onboarding");
-        return;
-      }
-
-      if (profile.review_status !== "approved") {
-        router.replace("/pending");
-        return;
-      }
-
       const { members, error: membersError } = await fetchApprovedMembers(supabase);
       if (!isActive) {
         return;
       }
 
       if (membersError) {
-        setState((prev) => ({
-          ...prev,
+        setState({
           isLoading: false,
-          error: buildProfileTableHint(membersError) ??
+          error:
+            buildProfileTableHint(membersError) ??
             t("members.errors.load_list", "Failed to load members list."),
-        }));
+          members: [],
+        });
         return;
       }
 
       setState({
         isLoading: false,
         error: null,
-        currentUser: profile,
         members,
       });
     };
 
-    loadMembers();
+    void loadMembers();
 
     return () => {
       isActive = false;
     };
-  }, [router, supabase, t]);
+  }, [authError, authStatus, currentUser, router, supabase, t]);
 
   async function handleSignOut() {
-    if (!supabase) {
-      return;
-    }
-
-    await supabase.auth.signOut();
+    await signOut();
     router.replace("/auth");
   }
 
   const directoryMembers = useMemo(
-    () => state.members.filter((member) => member.id !== state.currentUser?.id),
-    [state.members, state.currentUser],
+    () => state.members.filter((member) => member.id !== currentUser?.id),
+    [currentUser?.id, state.members],
   );
 
   const locationOptions = useMemo(
@@ -323,7 +307,7 @@ export function MembersPageSection() {
             )}
           </section>
 
-          {state.currentUser ? (
+          {currentUser ? (
             <section className="flow-card my-profile-section">
               <div className="my-profile-header">
                 <h2>{t("members.my_profile_title", "My profile")}</h2>
@@ -331,7 +315,7 @@ export function MembersPageSection() {
                   {t("members.my_profile_description", "View and update your profile anytime.")}
                 </p>
               </div>
-              <MemberDirectoryCard member={state.currentUser} isCurrentUser />
+              <MemberDirectoryCard member={currentUser} isCurrentUser />
             </section>
           ) : null}
 

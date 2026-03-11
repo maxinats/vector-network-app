@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useI18n } from "@/components/providers/language-provider";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
@@ -15,12 +16,10 @@ import {
 } from "@/lib/member-directory";
 import {
   buildProfileTableHint,
-  fetchCurrentMemberProfile,
   type MemberProfile,
   type MemberProfileInput,
   upsertMemberProfile,
 } from "@/lib/supabase/member-profiles";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type FormState = {
   fullName: string;
@@ -71,12 +70,21 @@ const FIELD_LIMITS = {
 export function OnboardingPageSection() {
   const router = useRouter();
   const { t } = useI18n();
+  const {
+    status: authStatus,
+    userId: authUserId,
+    profile,
+    error: authError,
+    supabase,
+    refreshProfile,
+  } = useAuth();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [contactMethod, setContactMethod] = useState<ContactInputMethod>("telegram");
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditModeResolved, setIsEditModeResolved] = useState(false);
   const [status, setStatus] = useState<StatusState>(null);
   const [hasRejectedState, setHasRejectedState] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -84,96 +92,74 @@ export function OnboardingPageSection() {
   const buildingRef = useRef<HTMLTextAreaElement | null>(null);
   const lookingForRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const supabase = useMemo(() => {
-    try {
-      return createSupabaseBrowserClient();
-    } catch {
-      return null;
-    }
+  useEffect(() => {
+    setIsEditMode(isEditModeQueryEnabled());
+    setIsEditModeResolved(true);
   }, []);
 
   useEffect(() => {
-    let isActive = true;
+    if (!isEditModeResolved) {
+      setIsLoading(true);
+      return;
+    }
 
-    const initialize = async () => {
-      const editMode = isEditModeQueryEnabled();
-      setIsEditMode(editMode);
+    if (authStatus === "loading") {
+      setIsLoading(true);
+      return;
+    }
 
-      if (!supabase) {
-        if (isActive) {
-          setStatus({
-            type: "error",
-            message: t(
-              "onboarding.errors.supabase_not_configured",
-              "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
-            ),
-          });
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (!isActive) {
-        return;
-      }
-
-      if (authError) {
-        setStatus({ type: "error", message: authError.message });
-        setIsLoading(false);
-        return;
-      }
-
-      const user = authData.user;
-      if (!user) {
-        router.replace("/auth");
-        return;
-      }
-
-      setUserId(user.id);
-      const { profile, error } = await fetchCurrentMemberProfile(supabase, user.id);
-      if (!isActive) {
-        return;
-      }
-
-      if (error) {
-        setStatus({
-          type: "error",
-          message:
-            buildProfileTableHint(error) ??
-            t(
-              "onboarding.errors.load_profile",
-              "Failed to load profile data from Supabase.",
-            ),
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (profile?.review_status === "approved" && !editMode) {
-        router.replace("/members");
-        return;
-      }
-
-      if (profile?.review_status === "pending") {
-        router.replace("/pending");
-        return;
-      }
-
-      const parsedContact = parseContactForInput(profile?.contact ?? "");
-      setHasRejectedState(profile?.review_status === "rejected");
-      setContactMethod(profile ? parsedContact.method : "telegram");
-      setForm(buildFormState(profile, profile ? parsedContact.value : ""));
-      setErrors({});
+    if (authStatus === "error") {
+      setStatus({
+        type: "error",
+        message:
+          authError ??
+          t(
+            "onboarding.errors.load_profile",
+            "Failed to load profile data from Supabase.",
+          ),
+      });
       setIsLoading(false);
-    };
+      return;
+    }
 
-    initialize();
+    if (authStatus === "unauthenticated") {
+      router.replace("/auth");
+      return;
+    }
 
-    return () => {
-      isActive = false;
-    };
-  }, [router, supabase, t]);
+    if (!authUserId) {
+      router.replace("/auth");
+      return;
+    }
+
+    setUserId(authUserId);
+
+    if (!isEditMode && profile?.review_status === "approved") {
+      router.replace("/members");
+      return;
+    }
+
+    if (profile?.review_status === "pending") {
+      router.replace("/pending");
+      return;
+    }
+
+    const parsedContact = parseContactForInput(profile?.contact ?? "");
+    setHasRejectedState(profile?.review_status === "rejected");
+    setContactMethod(profile ? parsedContact.method : "telegram");
+    setForm(buildFormState(profile, profile ? parsedContact.value : ""));
+    setErrors({});
+    setIsLoading(false);
+  }, [
+    authError,
+    authStatus,
+    authUserId,
+    isEditMode,
+    isEditModeResolved,
+    profile,
+    router,
+    t,
+  ]);
 
   useEffect(() => {
     autoResizeTextarea(aboutRef.current);
@@ -233,6 +219,7 @@ export function OnboardingPageSection() {
       return;
     }
 
+    await refreshProfile();
     router.replace("/pending");
   }
 

@@ -1,54 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { EmailPasswordAuthForm } from "@/components/forms/email-password-auth-form";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useI18n } from "@/components/providers/language-provider";
-import {
-  buildProfileTableHint,
-  fetchCurrentMemberProfile,
-  resolveRouteByProfile,
-} from "@/lib/supabase/member-profiles";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { resolveRouteByProfile } from "@/lib/supabase/member-profiles";
 
 export function AuthPageSection() {
   const router = useRouter();
   const { t } = useI18n();
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { status, profile, error, refreshAuthState } = useAuth();
   const [initialMode, setInitialMode] = useState<"login" | "signup">("login");
   const [initialEmail, setInitialEmail] = useState("");
-
-  const supabase = useMemo(() => {
-    try {
-      return createSupabaseBrowserClient();
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const resolveUserAccess = useCallback(
-    async (userId: string) => {
-      if (!supabase) {
-        return;
-      }
-
-      const { profile, error } = await fetchCurrentMemberProfile(supabase, userId);
-      if (error) {
-        setErrorMessage(
-          buildProfileTableHint(error) ??
-            t("auth_page.errors.resolve_access", "Failed to resolve your access route."),
-        );
-        setShowLoginForm(true);
-        setIsCheckingSession(false);
-        return;
-      }
-
-      router.replace(resolveRouteByProfile(profile));
-    },
-    [router, supabase, t],
-  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -61,64 +25,27 @@ export function AuthPageSection() {
   }, []);
 
   useEffect(() => {
-    if (!supabase) {
-      setErrorMessage(
-        t(
-          "auth_page.errors.supabase_not_configured",
-          "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
-        ),
-      );
-      setIsCheckingSession(false);
+    if (status !== "authenticated") {
       return;
     }
 
-    let isActive = true;
-
-    const resolveSession = async () => {
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
-      if (!isActive) {
-        return;
-      }
-
-      if (sessionError && !isSessionMissingError(sessionError.message)) {
-        setErrorMessage(sessionError.message);
-        setIsCheckingSession(false);
-        return;
-      }
-
-      const user = sessionData.session?.user ?? null;
-      if (!user) {
-        setErrorMessage(null);
-        setShowLoginForm(true);
-        setIsCheckingSession(false);
-        return;
-      }
-
-      await resolveUserAccess(user.id);
-    };
-
-    resolveSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      resolveSession();
-    });
-
-    return () => {
-      isActive = false;
-      listener.subscription.unsubscribe();
-    };
-  }, [resolveUserAccess, supabase, t]);
+    router.replace(resolveRouteByProfile(profile));
+  }, [profile, router, status]);
 
   const handleAuthenticated = useCallback(
-    async (userId: string) => {
-      setErrorMessage(null);
-      setShowLoginForm(false);
-      setIsCheckingSession(true);
-      await resolveUserAccess(userId);
+    async (_userId: string) => {
+      await refreshAuthState();
     },
-    [resolveUserAccess],
+    [refreshAuthState],
   );
+
+  const isCheckingSession = status === "loading";
+  const showLoginForm = status === "unauthenticated" || status === "error";
+  const errorMessage =
+    status === "error"
+      ? error ??
+        t("auth_page.errors.resolve_access", "Failed to resolve your access route.")
+      : null;
 
   return (
     <div className="page-shell">
@@ -162,8 +89,4 @@ export function AuthPageSection() {
       </main>
     </div>
   );
-}
-
-function isSessionMissingError(message: string) {
-  return message.toLowerCase().includes("auth session missing");
 }

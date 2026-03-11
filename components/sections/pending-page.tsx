@@ -2,117 +2,61 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useI18n } from "@/components/providers/language-provider";
-import {
-  buildProfileTableHint,
-  fetchCurrentMemberProfile,
-  type MemberProfile,
-} from "@/lib/supabase/member-profiles";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-
-type PendingState = {
-  profile: MemberProfile | null;
-  isLoading: boolean;
-  error: string | null;
-};
 
 export function PendingPageSection() {
   const router = useRouter();
   const { t } = useI18n();
-  const [state, setState] = useState<PendingState>({
-    profile: null,
-    isLoading: true,
-    error: null,
-  });
-
-  const supabase = useMemo(() => {
-    try {
-      return createSupabaseBrowserClient();
-    } catch {
-      return null;
-    }
-  }, []);
+  const {
+    status: authStatus,
+    profile,
+    error,
+    refreshProfile,
+    signOut,
+  } = useAuth();
 
   useEffect(() => {
-    if (!supabase) {
-      setState({
-        profile: null,
-        isLoading: false,
-        error: t(
-          "pending.errors.supabase_not_configured",
-          "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
-        ),
-      });
+    if (authStatus === "unauthenticated") {
+      router.replace("/auth");
       return;
     }
 
-    let isActive = true;
+    if (authStatus !== "authenticated") {
+      return;
+    }
 
-    const loadStatus = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!isActive) {
-        return;
-      }
+    if (!profile) {
+      router.replace("/onboarding");
+      return;
+    }
 
-      const user = authData.user;
-      if (!user) {
-        router.replace("/auth");
-        return;
-      }
+    if (profile.review_status === "approved") {
+      router.replace("/members");
+    }
+  }, [authStatus, profile, router]);
 
-      const { profile, error } = await fetchCurrentMemberProfile(supabase, user.id);
-      if (!isActive) {
-        return;
-      }
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
+      return;
+    }
 
-      if (error) {
-        setState({
-          profile: null,
-          isLoading: false,
-          error:
-            buildProfileTableHint(error) ??
-            t("pending.errors.load_status", "Failed to load your application status."),
-        });
-        return;
-      }
-
-      if (!profile) {
-        router.replace("/onboarding");
-        return;
-      }
-
-      if (profile.review_status === "approved") {
-        router.replace("/members");
-        return;
-      }
-
-      setState({
-        profile,
-        isLoading: false,
-        error: null,
-      });
-    };
-
-    loadStatus();
-    const intervalId = window.setInterval(loadStatus, 15000);
+    const intervalId = window.setInterval(() => {
+      void refreshProfile();
+    }, 15000);
 
     return () => {
-      isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [router, supabase, t]);
+  }, [authStatus, refreshProfile]);
 
   async function handleSignOut() {
-    if (!supabase) {
-      return;
-    }
-
-    await supabase.auth.signOut();
+    await signOut();
     router.replace("/auth");
   }
 
-  if (state.isLoading) {
+  if (authStatus === "loading") {
     return (
       <div className="page-shell">
         <div className="page-gradient" aria-hidden="true" />
@@ -125,13 +69,16 @@ export function PendingPageSection() {
     );
   }
 
-  if (state.error) {
+  if (authStatus === "error") {
     return (
       <div className="page-shell">
         <div className="page-gradient" aria-hidden="true" />
         <main className="flow-shell flow-shell--narrow">
           <section className="flow-card">
-            <p className="form-message form-message--error">{state.error}</p>
+            <p className="form-message form-message--error">
+              {error ??
+                t("pending.errors.load_status", "Failed to load your application status.")}
+            </p>
             <Link href="/onboarding" className="primary-button auth-button-link">
               {t("pending.open_onboarding", "Open onboarding")}
             </Link>
@@ -141,7 +88,11 @@ export function PendingPageSection() {
     );
   }
 
-  const isRejected = state.profile?.review_status === "rejected";
+  if (!profile) {
+    return null;
+  }
+
+  const isRejected = profile.review_status === "rejected";
 
   return (
     <div className="page-shell">
@@ -163,7 +114,7 @@ export function PendingPageSection() {
 
         <section className="flow-card pending-card">
           <p className={isRejected ? "pending-badge rejected" : "pending-badge pending"}>
-            {t("pending.status_label", "Status:")} {state.profile?.review_status}
+            {t("pending.status_label", "Status:")} {profile.review_status}
           </p>
 
           <div className="pending-actions">

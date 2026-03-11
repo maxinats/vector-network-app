@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useI18n } from "@/components/providers/language-provider";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import { ExpandableText } from "@/components/ui/expandable-text";
@@ -14,11 +15,9 @@ import {
 } from "@/lib/member-directory";
 import {
   buildProfileTableHint,
-  fetchCurrentMemberProfile,
   fetchMemberProfileById,
   type MemberProfile,
 } from "@/lib/supabase/member-profiles";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type MemberProfilePageSectionProps = {
   memberId: string;
@@ -27,7 +26,6 @@ type MemberProfilePageSectionProps = {
 type ProfilePageState = {
   isLoading: boolean;
   error: string | null;
-  currentUser: MemberProfile | null;
   targetMember: MemberProfile | null;
 };
 
@@ -36,22 +34,51 @@ export function MemberProfilePageSection({
 }: MemberProfilePageSectionProps) {
   const router = useRouter();
   const { t } = useI18n();
+  const {
+    status: authStatus,
+    profile: currentUser,
+    error: authError,
+    supabase,
+    signOut,
+  } = useAuth();
   const [state, setState] = useState<ProfilePageState>({
     isLoading: true,
     error: null,
-    currentUser: null,
     targetMember: null,
   });
 
-  const supabase = useMemo(() => {
-    try {
-      return createSupabaseBrowserClient();
-    } catch {
-      return null;
-    }
-  }, []);
-
   useEffect(() => {
+    if (authStatus === "loading") {
+      setState((prev) => (prev.isLoading ? prev : { ...prev, isLoading: true }));
+      return;
+    }
+
+    if (authStatus === "error") {
+      setState({
+        isLoading: false,
+        error:
+          authError ??
+          t("member_profile.errors.load_your_profile", "Failed to load your profile."),
+        targetMember: null,
+      });
+      return;
+    }
+
+    if (authStatus === "unauthenticated") {
+      router.replace("/auth");
+      return;
+    }
+
+    if (!currentUser) {
+      router.replace("/onboarding");
+      return;
+    }
+
+    if (currentUser.review_status !== "approved") {
+      router.replace("/pending");
+      return;
+    }
+
     if (!supabase) {
       setState({
         isLoading: false,
@@ -59,55 +86,15 @@ export function MemberProfilePageSection({
           "member_profile.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
         ),
-        currentUser: null,
         targetMember: null,
       });
       return;
     }
 
     let isActive = true;
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     const loadProfile = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!isActive) {
-        return;
-      }
-
-      const user = authData.user;
-      if (!user) {
-        router.replace("/auth");
-        return;
-      }
-
-      const { profile: currentProfile, error: currentProfileError } =
-        await fetchCurrentMemberProfile(supabase, user.id);
-
-      if (!isActive) {
-        return;
-      }
-
-      if (currentProfileError) {
-        setState({
-          isLoading: false,
-          error:
-            buildProfileTableHint(currentProfileError) ??
-            t("member_profile.errors.load_your_profile", "Failed to load your profile."),
-          currentUser: null,
-          targetMember: null,
-        });
-        return;
-      }
-
-      if (!currentProfile) {
-        router.replace("/onboarding");
-        return;
-      }
-
-      if (currentProfile.review_status !== "approved") {
-        router.replace("/pending");
-        return;
-      }
-
       const { profile: targetMember, error: targetMemberError } =
         await fetchMemberProfileById(supabase, memberId);
       if (!isActive) {
@@ -120,7 +107,6 @@ export function MemberProfilePageSection({
           error:
             buildProfileTableHint(targetMemberError) ??
             t("member_profile.errors.load_member_profile", "Failed to load member profile."),
-          currentUser: currentProfile,
           targetMember: null,
         });
         return;
@@ -133,7 +119,6 @@ export function MemberProfilePageSection({
             "member_profile.errors.not_found_or_restricted",
             "Member profile not found or access is restricted.",
           ),
-          currentUser: currentProfile,
           targetMember: null,
         });
         return;
@@ -142,24 +127,19 @@ export function MemberProfilePageSection({
       setState({
         isLoading: false,
         error: null,
-        currentUser: currentProfile,
         targetMember,
       });
     };
 
-    loadProfile();
+    void loadProfile();
 
     return () => {
       isActive = false;
     };
-  }, [memberId, router, supabase, t]);
+  }, [authError, authStatus, currentUser, memberId, router, supabase, t]);
 
   async function handleSignOut() {
-    if (!supabase) {
-      return;
-    }
-
-    await supabase.auth.signOut();
+    await signOut();
     router.replace("/auth");
   }
 
@@ -195,7 +175,7 @@ export function MemberProfilePageSection({
   }
 
   const member = state.targetMember;
-  const isCurrentUser = state.currentUser?.id === member.id;
+  const isCurrentUser = currentUser?.id === member.id;
   const links = buildProfileLinkMap(member);
   const connect = buildConnectAction(member.contact, member.full_name);
   const meta = [member.role_title, member.country].filter(Boolean).join(" | ");
