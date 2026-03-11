@@ -14,7 +14,8 @@ export function LandingEmailForm() {
   const router = useRouter();
   const { t } = useI18n();
   const [email, setEmail] = useState("");
-  const [agreed, setAgreed] = useState(false);
+  const [agreedLegal, setAgreedLegal] = useState(false);
+  const [agreedNewsletters, setAgreedNewsletters] = useState(false);
   const [status, setStatus] = useState<FormStatus>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -29,12 +30,23 @@ export function LandingEmailForm() {
       return;
     }
 
-    if (!agreed) {
+    if (!agreedLegal) {
       setStatus({
         type: "error",
         message: t(
-          "landing_form.errors.privacy_required",
-          "Please accept Privacy Policy before continuing.",
+          "landing_form.errors.legal_required",
+          "Please accept Privacy Policy and Terms of Service before continuing.",
+        ),
+      });
+      return;
+    }
+
+    if (!agreedNewsletters) {
+      setStatus({
+        type: "error",
+        message: t(
+          "landing_form.errors.newsletters_required",
+          "Please agree to receive informational newsletters before continuing.",
         ),
       });
       return;
@@ -67,19 +79,39 @@ export function LandingEmailForm() {
         required
       />
 
-      <label className="policy-row" htmlFor="landing-privacy-consent">
+      <label className="policy-row" htmlFor="landing-legal-consent">
         <input
-          id="landing-privacy-consent"
+          id="landing-legal-consent"
           className="policy-checkbox"
           type="checkbox"
-          checked={agreed}
-          onChange={(event) => setAgreed(event.target.checked)}
+          checked={agreedLegal}
+          onChange={(event) => setAgreedLegal(event.target.checked)}
         />
         <span>
-          {t("landing_form.agree_prefix", "I agree with")}{" "}
+          {t("landing_form.legal_agree_prefix", "I agree with")}{" "}
           <Link href="/privacy" className="inline-link">
             {t("footer.privacy_policy", "Privacy Policy")}
+          </Link>{" "}
+          {t("landing_form.and", "and")}{" "}
+          <Link href="/terms" className="inline-link">
+            {t("footer.terms", "Terms of Service")}
           </Link>
+        </span>
+      </label>
+
+      <label className="policy-row" htmlFor="landing-newsletters-consent">
+        <input
+          id="landing-newsletters-consent"
+          className="policy-checkbox"
+          type="checkbox"
+          checked={agreedNewsletters}
+          onChange={(event) => setAgreedNewsletters(event.target.checked)}
+        />
+        <span>
+          {t(
+            "landing_form.newsletters_agree",
+            "I agree to receive informational newsletters from the service.",
+          )}
         </span>
       </label>
 

@@ -1,20 +1,36 @@
-"use client";
-
+import fs from "node:fs";
+import path from "node:path";
 import Link from "next/link";
-import { useI18n } from "@/components/providers/language-provider";
+
+const TERMS_OF_SERVICE_PATH = path.join(
+  process.cwd(),
+  "content",
+  "terms-of-service.html",
+);
 
 export default function TermsPage() {
-  const { t } = useI18n();
+  const termsHtml = readTermsHtml();
 
   return (
-    <main className="auth-shell">
-      <h1>{t("terms.title", "Terms of Service")}</h1>
-      <p className="auth-description">
-        {t("terms.description", "This page is a placeholder for your service terms.")}
-      </p>
-      <Link href="/" className="primary-button auth-button-link">
-        {t("common.nav.back_to_main", "Back to main")}
-      </Link>
-    </main>
+    <div className="page-shell">
+      <div className="page-gradient" aria-hidden="true" />
+      <main className="flow-shell policy-shell">
+        <article
+          className="flow-card policy-content"
+          dangerouslySetInnerHTML={{ __html: termsHtml }}
+        />
+        <Link href="/" className="secondary-button auth-button-link">
+          Back to main
+        </Link>
+      </main>
+    </div>
   );
+}
+
+function readTermsHtml() {
+  try {
+    return fs.readFileSync(TERMS_OF_SERVICE_PATH, "utf8");
+  } catch {
+    return "<h1>Terms of Service</h1><p>Terms of Service are temporarily unavailable.</p>";
+  }
 }

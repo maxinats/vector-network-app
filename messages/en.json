@@ -76,13 +76,16 @@
     "safe_note": "Your data is safe. No spam, ever.",
     "email_label": "Email address",
     "email_placeholder": "Email address",
-    "agree_prefix": "I agree with",
+    "legal_agree_prefix": "I agree with",
+    "and": "and",
+    "newsletters_agree": "I agree to receive informational newsletters from the service.",
     "get_access": "Get Access ->",
     "already_joined": "Already joined?",
     "log_in": "Log in",
     "errors": {
       "email_required": "Enter your email address.",
-      "privacy_required": "Please accept Privacy Policy before continuing."
+      "legal_required": "Please accept Privacy Policy and Terms of Service before continuing.",
+      "newsletters_required": "Please agree to receive informational newsletters before continuing."
     }
   },
   "auth_page": {
