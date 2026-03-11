@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import {
   formatContactForStorage,
@@ -53,6 +53,19 @@ const EMPTY_FORM: FormState = {
   linkedin: "",
 };
 
+const FIELD_LIMITS = {
+  fullName: 80,
+  contact: 80,
+  country: 56,
+  roleTitle: 80,
+  about: 1000,
+  building: 800,
+  lookingFor: 800,
+  website: 160,
+  twitter: 160,
+  linkedin: 160,
+} as const;
+
 export function OnboardingPageSection() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -64,6 +77,9 @@ export function OnboardingPageSection() {
   const [status, setStatus] = useState<StatusState>(null);
   const [hasRejectedState, setHasRejectedState] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const aboutRef = useRef<HTMLTextAreaElement | null>(null);
+  const buildingRef = useRef<HTMLTextAreaElement | null>(null);
+  const lookingForRef = useRef<HTMLTextAreaElement | null>(null);
 
   const supabase = useMemo(() => {
     try {
@@ -150,6 +166,18 @@ export function OnboardingPageSection() {
       isActive = false;
     };
   }, [router, supabase]);
+
+  useEffect(() => {
+    autoResizeTextarea(aboutRef.current);
+  }, [form.about]);
+
+  useEffect(() => {
+    autoResizeTextarea(buildingRef.current);
+  }, [form.building]);
+
+  useEffect(() => {
+    autoResizeTextarea(lookingForRef.current);
+  }, [form.lookingFor]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -278,11 +306,14 @@ export function OnboardingPageSection() {
                   value={form.fullName}
                   onChange={(event) => updateField("fullName", event.target.value)}
                   placeholder="Your name"
+                  maxLength={FIELD_LIMITS.fullName}
                   required
                 />
-                {errors.fullName ? (
-                  <span className="field-error">{errors.fullName}</span>
-                ) : null}
+                <FieldFooter
+                  error={errors.fullName}
+                  value={form.fullName}
+                  limit={FIELD_LIMITS.fullName}
+                />
               </label>
 
               <div className="onboarding-field">
@@ -314,15 +345,15 @@ export function OnboardingPageSection() {
                       ? "@telegram_username"
                       : "your@email.com"
                   }
+                  maxLength={FIELD_LIMITS.contact}
                   required
                 />
-                {errors.contact ? (
-                  <span className="field-error">{errors.contact}</span>
-                ) : (
-                  <span className="flow-muted flow-muted--center">
-                    This will be shown as the contact button in your profile.
-                  </span>
-                )}
+                <FieldFooter
+                  error={errors.contact}
+                  helperText="This will be shown as the contact button in your profile."
+                  value={form.contact}
+                  limit={FIELD_LIMITS.contact}
+                />
               </div>
 
               <label className="onboarding-field">
@@ -332,11 +363,14 @@ export function OnboardingPageSection() {
                   value={form.country}
                   onChange={(event) => updateField("country", event.target.value)}
                   placeholder="Country"
+                  maxLength={FIELD_LIMITS.country}
                   required
                 />
-                {errors.country ? (
-                  <span className="field-error">{errors.country}</span>
-                ) : null}
+                <FieldFooter
+                  error={errors.country}
+                  value={form.country}
+                  limit={FIELD_LIMITS.country}
+                />
               </label>
 
               <label className="onboarding-field">
@@ -346,50 +380,67 @@ export function OnboardingPageSection() {
                   value={form.roleTitle}
                   onChange={(event) => updateField("roleTitle", event.target.value)}
                   placeholder="e.g. Product Designer, Founder"
+                  maxLength={FIELD_LIMITS.roleTitle}
                 />
-                {errors.roleTitle ? (
-                  <span className="field-error">{errors.roleTitle}</span>
-                ) : null}
+                <FieldFooter
+                  error={errors.roleTitle}
+                  value={form.roleTitle}
+                  limit={FIELD_LIMITS.roleTitle}
+                />
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">What do you do? *</span>
                 <textarea
+                  ref={aboutRef}
                   className={`magic-input onboarding-textarea ${errors.about ? "input-error" : ""}`}
                   value={form.about}
                   onChange={(event) => updateField("about", event.target.value)}
                   placeholder="Tell us about your role, expertise, or what you're passionate about"
+                  maxLength={FIELD_LIMITS.about}
                   required
                 />
-                {errors.about ? <span className="field-error">{errors.about}</span> : null}
+                <FieldFooter
+                  error={errors.about}
+                  value={form.about}
+                  limit={FIELD_LIMITS.about}
+                />
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">What are you building?</span>
                 <textarea
+                  ref={buildingRef}
                   className={`magic-input onboarding-textarea ${errors.building ? "input-error" : ""}`}
                   value={form.building}
                   onChange={(event) => updateField("building", event.target.value)}
                   placeholder="Share what you're currently working on"
+                  maxLength={FIELD_LIMITS.building}
                 />
-                {errors.building ? (
-                  <span className="field-error">{errors.building}</span>
-                ) : null}
+                <FieldFooter
+                  error={errors.building}
+                  value={form.building}
+                  limit={FIELD_LIMITS.building}
+                />
               </label>
 
               <label className="onboarding-field">
                 <span className="onboarding-label">What are you looking for?</span>
                 <textarea
+                  ref={lookingForRef}
                   className={`magic-input onboarding-textarea ${errors.lookingFor ? "input-error" : ""}`}
                   value={form.lookingFor}
                   onChange={(event) =>
                     updateField("lookingFor", event.target.value)
                   }
                   placeholder="e.g. collaborators, feedback, early users, opportunities"
+                  maxLength={FIELD_LIMITS.lookingFor}
                 />
-                {errors.lookingFor ? (
-                  <span className="field-error">{errors.lookingFor}</span>
-                ) : null}
+                <FieldFooter
+                  error={errors.lookingFor}
+                  value={form.lookingFor}
+                  limit={FIELD_LIMITS.lookingFor}
+                />
               </label>
 
               <div className="onboarding-group-title">Links</div>
@@ -403,8 +454,13 @@ export function OnboardingPageSection() {
                   value={form.website}
                   onChange={(event) => updateField("website", event.target.value)}
                   placeholder="https://yourwebsite.com"
+                  maxLength={FIELD_LIMITS.website}
                 />
-                {errors.website ? <span className="field-error">{errors.website}</span> : null}
+                <FieldFooter
+                  error={errors.website}
+                  value={form.website}
+                  limit={FIELD_LIMITS.website}
+                />
               </label>
 
               <label className="onboarding-field">
@@ -416,8 +472,13 @@ export function OnboardingPageSection() {
                   value={form.twitter}
                   onChange={(event) => updateField("twitter", event.target.value)}
                   placeholder="@username"
+                  maxLength={FIELD_LIMITS.twitter}
                 />
-                {errors.twitter ? <span className="field-error">{errors.twitter}</span> : null}
+                <FieldFooter
+                  error={errors.twitter}
+                  value={form.twitter}
+                  limit={FIELD_LIMITS.twitter}
+                />
               </label>
 
               <label className="onboarding-field">
@@ -429,10 +490,13 @@ export function OnboardingPageSection() {
                   value={form.linkedin}
                   onChange={(event) => updateField("linkedin", event.target.value)}
                   placeholder="LinkedIn profile URL"
+                  maxLength={FIELD_LIMITS.linkedin}
                 />
-                {errors.linkedin ? (
-                  <span className="field-error">{errors.linkedin}</span>
-                ) : null}
+                <FieldFooter
+                  error={errors.linkedin}
+                  value={form.linkedin}
+                  limit={FIELD_LIMITS.linkedin}
+                />
               </label>
 
               <button className="primary-button" type="submit" disabled={isSubmitting}>
@@ -502,43 +566,64 @@ function validateForm(
 
   if (form.fullName.trim().length < 2) {
     nextErrors.fullName = "Enter full name (at least 2 characters).";
+  } else if (form.fullName.length > FIELD_LIMITS.fullName) {
+    nextErrors.fullName = `Full name must be up to ${FIELD_LIMITS.fullName} characters.`;
   }
 
   const contactError = validateContactInput(contactMethod, form.contact);
   if (contactError) {
     nextErrors.contact = contactError;
+  } else if (form.contact.length > FIELD_LIMITS.contact) {
+    nextErrors.contact = `Contact must be up to ${FIELD_LIMITS.contact} characters.`;
   }
 
   if (form.country.trim().length < 2) {
     nextErrors.country = "Enter your country.";
+  } else if (form.country.length > FIELD_LIMITS.country) {
+    nextErrors.country = `Country must be up to ${FIELD_LIMITS.country} characters.`;
   }
 
-  if (form.roleTitle.trim().length > 80) {
-    nextErrors.roleTitle = "Role/Title must be up to 80 characters.";
+  if (form.roleTitle.trim().length > FIELD_LIMITS.roleTitle) {
+    nextErrors.roleTitle = `Role/Title must be up to ${FIELD_LIMITS.roleTitle} characters.`;
   }
 
   if (form.about.trim().length < 20) {
     nextErrors.about = "Describe what you do in at least 20 characters.";
+  } else if (form.about.trim().length > FIELD_LIMITS.about) {
+    nextErrors.about = `About text must be up to ${FIELD_LIMITS.about} characters.`;
   }
 
-  if (form.building.trim().length > 500) {
-    nextErrors.building = "Building text must be up to 500 characters.";
+  if (form.building.trim().length > FIELD_LIMITS.building) {
+    nextErrors.building = `Building text must be up to ${FIELD_LIMITS.building} characters.`;
   }
 
-  if (form.lookingFor.trim().length > 500) {
-    nextErrors.lookingFor = "Looking for text must be up to 500 characters.";
+  if (form.lookingFor.trim().length > FIELD_LIMITS.lookingFor) {
+    nextErrors.lookingFor = `Looking for text must be up to ${FIELD_LIMITS.lookingFor} characters.`;
   }
 
-  if (form.website.trim() && !isLikelyHttpUrl(form.website)) {
-    nextErrors.website = "Enter a valid website URL.";
+  if (form.website.trim()) {
+    if (form.website.length > FIELD_LIMITS.website) {
+      nextErrors.website = `Website must be up to ${FIELD_LIMITS.website} characters.`;
+    } else if (!isLikelyHttpUrl(form.website)) {
+      nextErrors.website = "Enter a valid website URL.";
+    }
   }
 
-  if (form.linkedin.trim() && !isLikelyHttpUrl(form.linkedin)) {
-    nextErrors.linkedin = "Enter a valid LinkedIn URL.";
+  if (form.linkedin.trim()) {
+    if (form.linkedin.length > FIELD_LIMITS.linkedin) {
+      nextErrors.linkedin = `LinkedIn must be up to ${FIELD_LIMITS.linkedin} characters.`;
+    } else if (!isLikelyHttpUrl(form.linkedin)) {
+      nextErrors.linkedin = "Enter a valid LinkedIn URL.";
+    }
   }
 
   if (form.twitter.trim()) {
     const normalized = form.twitter.trim();
+    if (normalized.length > FIELD_LIMITS.twitter) {
+      nextErrors.twitter = `Twitter must be up to ${FIELD_LIMITS.twitter} characters.`;
+      return nextErrors;
+    }
+
     const isHandle = /^@?[A-Za-z0-9_]{1,15}$/.test(normalized);
     const isUrl = isLikelyHttpUrl(normalized);
     if (!isHandle && !isUrl) {
@@ -575,4 +660,45 @@ function isEditModeQueryEnabled() {
 
   const params = new URLSearchParams(window.location.search);
   return params.get("edit") === "1";
+}
+
+type FieldFooterProps = {
+  error?: string;
+  helperText?: string;
+  value: string;
+  limit: number;
+};
+
+function FieldFooter({ error, helperText, value, limit }: FieldFooterProps) {
+  const ratio = limit > 0 ? value.length / limit : 0;
+  const counterClass =
+    ratio >= 1 ? "char-counter char-counter--error" : ratio >= 0.9 ? "char-counter char-counter--warn" : "char-counter";
+
+  return (
+    <div className="field-footer">
+      {error ? (
+        <span className="field-error">{error}</span>
+      ) : helperText ? (
+        <span className="field-helper">{helperText}</span>
+      ) : (
+        <span className="field-helper" aria-hidden="true">
+          {" "}
+        </span>
+      )}
+      <span className={counterClass}>
+        {value.length}/{limit}
+      </span>
+    </div>
+  );
+}
+
+function autoResizeTextarea(textarea: HTMLTextAreaElement | null) {
+  if (!textarea) {
+    return;
+  }
+
+  const MAX_HEIGHT = 320;
+  textarea.style.height = "0px";
+  textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_HEIGHT)}px`;
+  textarea.style.overflowY = textarea.scrollHeight > MAX_HEIGHT ? "auto" : "hidden";
 }
