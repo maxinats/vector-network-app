@@ -83,8 +83,8 @@ export function HomePageSection() {
   return (
     <div className="page-shell">
       <div className="page-gradient" aria-hidden="true" />
-      <div className="page-inner">
-        <header className="top-nav">
+      <div className="page-inner page-inner--fixed-nav">
+        <header className="top-nav top-nav--fixed">
           <div className="top-nav-inner">
             <span className="brand">Vector Network</span>
             <a href="#access" className="join-pill">

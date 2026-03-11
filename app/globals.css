@@ -76,11 +76,24 @@ select {
   min-height: 100dvh;
 }
 
+.page-inner--fixed-nav {
+  padding-top: 72px;
+}
+
 .top-nav {
   position: sticky;
   top: 0;
   z-index: 20;
   padding: 12px;
+}
+
+.top-nav--fixed {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: min(100%, 390px);
+  transform: translateX(-50%);
+  z-index: 40;
 }
 
 .top-nav-inner {
