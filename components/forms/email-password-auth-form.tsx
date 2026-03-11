@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useI18n } from "@/components/providers/language-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AuthView = "login" | "signup" | "verify";
@@ -21,6 +22,7 @@ export function EmailPasswordAuthForm({
   initialMode = "login",
   initialEmail = "",
 }: EmailPasswordAuthFormProps) {
+  const { t } = useI18n();
   const [view, setView] = useState<AuthView>(initialMode);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
@@ -43,14 +45,19 @@ export function EmailPasswordAuthForm({
     if (!supabase) {
       setStatus({
         type: "error",
-        message:
+        message: t(
+          "auth_form.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        ),
       });
       return;
     }
 
     if (!email.trim() || !password) {
-      setStatus({ type: "error", message: "Enter email and password." });
+      setStatus({
+        type: "error",
+        message: t("auth_form.errors.enter_email_password", "Enter email and password."),
+      });
       return;
     }
 
@@ -71,7 +78,10 @@ export function EmailPasswordAuthForm({
     if (!data.user) {
       setStatus({
         type: "error",
-        message: "Failed to resolve user after sign in.",
+        message: t(
+          "auth_form.errors.resolve_user_after_signin",
+          "Failed to resolve user after sign in.",
+        ),
       });
       setIsLoading(false);
       return;
@@ -86,27 +96,38 @@ export function EmailPasswordAuthForm({
     if (!supabase) {
       setStatus({
         type: "error",
-        message:
+        message: t(
+          "auth_form.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        ),
       });
       return;
     }
 
     if (!email.trim() || !password) {
-      setStatus({ type: "error", message: "Enter email and password." });
+      setStatus({
+        type: "error",
+        message: t("auth_form.errors.enter_email_password", "Enter email and password."),
+      });
       return;
     }
 
     if (password.length < 6) {
       setStatus({
         type: "error",
-        message: "Password must be at least 6 characters.",
+        message: t(
+          "auth_form.errors.password_min_length",
+          "Password must be at least 6 characters.",
+        ),
       });
       return;
     }
 
     if (password !== confirmPassword) {
-      setStatus({ type: "error", message: "Passwords do not match." });
+      setStatus({
+        type: "error",
+        message: t("auth_form.errors.passwords_mismatch", "Passwords do not match."),
+      });
       return;
     }
 
@@ -134,8 +155,10 @@ export function EmailPasswordAuthForm({
     setView("verify");
     setStatus({
       type: "success",
-      message:
+      message: t(
+        "auth_form.status.account_created_verify",
         "Account created. Enter the verification code sent to your email.",
+      ),
     });
     setIsLoading(false);
   }
@@ -149,7 +172,10 @@ export function EmailPasswordAuthForm({
     if (!verificationEmail || !verificationCode.trim()) {
       setStatus({
         type: "error",
-        message: "Enter verification code from your email.",
+        message: t(
+          "auth_form.errors.enter_verification_code",
+          "Enter verification code from your email.",
+        ),
       });
       return;
     }
@@ -172,7 +198,10 @@ export function EmailPasswordAuthForm({
     if (!data.user) {
       setStatus({
         type: "error",
-        message: "Verification failed. Try requesting code again.",
+        message: t(
+          "auth_form.errors.verification_failed",
+          "Verification failed. Try requesting code again.",
+        ),
       });
       setIsLoading(false);
       return;
@@ -203,7 +232,7 @@ export function EmailPasswordAuthForm({
 
     setStatus({
       type: "success",
-      message: "Verification code was sent again.",
+      message: t("auth_form.status.code_resent", "Verification code was sent again."),
     });
     setIsLoading(false);
   }
@@ -219,7 +248,7 @@ export function EmailPasswordAuthForm({
             setStatus(null);
           }}
         >
-          Log in
+          {t("auth_form.tabs.log_in", "Log in")}
         </button>
         <button
           type="button"
@@ -229,7 +258,7 @@ export function EmailPasswordAuthForm({
             setStatus(null);
           }}
         >
-          Sign up
+          {t("auth_form.tabs.sign_up", "Sign up")}
         </button>
       </div>
 
@@ -238,7 +267,7 @@ export function EmailPasswordAuthForm({
           <input
             className="magic-input"
             type="email"
-            placeholder="Email"
+            placeholder={t("auth_form.placeholders.email", "Email")}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
@@ -247,14 +276,16 @@ export function EmailPasswordAuthForm({
           <input
             className="magic-input"
             type="password"
-            placeholder="Password"
+            placeholder={t("auth_form.placeholders.password", "Password")}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="current-password"
             required
           />
           <button className="primary-button" type="submit" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Log in"}
+            {isLoading
+              ? t("auth_form.buttons.signing_in", "Signing in...")
+              : t("auth_form.buttons.log_in", "Log in")}
           </button>
         </form>
       ) : null}
@@ -264,7 +295,7 @@ export function EmailPasswordAuthForm({
           <input
             className="magic-input"
             type="email"
-            placeholder="Email"
+            placeholder={t("auth_form.placeholders.email", "Email")}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
@@ -273,7 +304,10 @@ export function EmailPasswordAuthForm({
           <input
             className="magic-input"
             type="password"
-            placeholder="Password (min 6 chars)"
+            placeholder={t(
+              "auth_form.placeholders.password_min",
+              "Password (min 6 chars)",
+            )}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="new-password"
@@ -282,31 +316,41 @@ export function EmailPasswordAuthForm({
           <input
             className="magic-input"
             type="password"
-            placeholder="Confirm password"
+            placeholder={t("auth_form.placeholders.confirm_password", "Confirm password")}
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             autoComplete="new-password"
             required
           />
           <button className="primary-button" type="submit" disabled={isLoading}>
-            {isLoading ? "Creating account..." : "Create account"}
+            {isLoading
+              ? t("auth_form.buttons.creating_account", "Creating account...")
+              : t("auth_form.buttons.create_account", "Create account")}
           </button>
         </form>
       ) : null}
 
       {view === "verify" ? (
         <form className="magic-form" onSubmit={handleVerifySubmit}>
-          <p className="safe-row">Verification email: {verificationEmail}</p>
+          <p className="safe-row">
+            {t("auth_form.verification_email_label", "Verification email:")}{" "}
+            {verificationEmail}
+          </p>
           <input
             className="magic-input"
             type="text"
-            placeholder="Email verification code"
+            placeholder={t(
+              "auth_form.placeholders.verification_code",
+              "Email verification code",
+            )}
             value={verificationCode}
             onChange={(event) => setVerificationCode(event.target.value)}
             required
           />
           <button className="primary-button" type="submit" disabled={isLoading}>
-            {isLoading ? "Verifying..." : "Verify code"}
+            {isLoading
+              ? t("auth_form.buttons.verifying", "Verifying...")
+              : t("auth_form.buttons.verify_code", "Verify code")}
           </button>
           <button
             type="button"
@@ -314,7 +358,7 @@ export function EmailPasswordAuthForm({
             onClick={handleResendCode}
             disabled={isLoading}
           >
-            Resend code
+            {t("auth_form.buttons.resend_code", "Resend code")}
           </button>
         </form>
       ) : null}

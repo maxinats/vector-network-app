@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/components/providers/language-provider";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import { ExpandableText } from "@/components/ui/expandable-text";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import {
   buildConnectAction,
   buildMemberSearchIndex,
@@ -38,6 +40,7 @@ const EMPTY_FILTERS: MembersFilters = {
 
 export function MembersPageSection() {
   const router = useRouter();
+  const { t } = useI18n();
   const [state, setState] = useState<MembersState>({
     isLoading: true,
     error: null,
@@ -59,8 +62,10 @@ export function MembersPageSection() {
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error:
+        error: t(
+          "members.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        ),
       }));
       return;
     }
@@ -92,8 +97,8 @@ export function MembersPageSection() {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error:
-            buildProfileTableHint(profileError) ?? "Failed to load your profile.",
+          error: buildProfileTableHint(profileError) ??
+            t("members.errors.load_profile", "Failed to load your profile."),
         }));
         return;
       }
@@ -117,9 +122,8 @@ export function MembersPageSection() {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error:
-            buildProfileTableHint(membersError) ??
-            "Failed to load members list.",
+          error: buildProfileTableHint(membersError) ??
+            t("members.errors.load_list", "Failed to load members list."),
         }));
         return;
       }
@@ -137,7 +141,7 @@ export function MembersPageSection() {
     return () => {
       isActive = false;
     };
-  }, [router, supabase]);
+  }, [router, supabase, t]);
 
   async function handleSignOut() {
     if (!supabase) {
@@ -190,7 +194,9 @@ export function MembersPageSection() {
       <div className="page-shell">
         <div className="page-gradient" aria-hidden="true" />
         <main className="flow-shell">
-          <p className="auth-description">Loading members...</p>
+          <p className="auth-description">
+            {t("members.loading", "Loading members...")}
+          </p>
         </main>
       </div>
     );
@@ -204,7 +210,7 @@ export function MembersPageSection() {
           <section className="flow-card">
             <p className="form-message form-message--error">{state.error}</p>
             <Link href="/pending" className="secondary-button">
-              Back to pending
+              {t("members.back_to_pending", "Back to pending")}
             </Link>
           </section>
         </main>
@@ -221,15 +227,16 @@ export function MembersPageSection() {
           <div className="top-nav-inner">
             <span className="brand">Vector Network</span>
             <div className="members-nav-actions">
+              <LanguageSwitcher />
               <Link href="/" className="join-pill">
-                Home
+                {t("common.nav.home", "Home")}
               </Link>
               <button
                 type="button"
                 className="join-pill join-pill--ghost"
                 onClick={handleSignOut}
               >
-                Sign out
+                {t("common.nav.sign_out", "Sign out")}
               </button>
             </div>
           </div>
@@ -237,20 +244,26 @@ export function MembersPageSection() {
 
         <main className="members-main">
           <section className="members-hero">
-            <h1 className="flow-title">Members</h1>
+            <h1 className="flow-title">{t("members.title", "Members")}</h1>
             <p className="flow-description">
-              Discover people building interesting things and connect with them.
+              {t(
+                "members.description",
+                "Discover people building interesting things and connect with them.",
+              )}
             </p>
           </section>
 
           <section className="flow-card members-toolbar">
             <label htmlFor="members-search" className="sr-only">
-              Search members
+              {t("members.search_label", "Search members")}
             </label>
             <input
               id="members-search"
               className="magic-input members-search"
-              placeholder="Search by name, role, location, or what people are building"
+              placeholder={t(
+                "members.search_placeholder",
+                "Search by name, role, location, or what people are building",
+              )}
               value={filters.query}
               onChange={(event) =>
                 setFilters((prev) => ({ ...prev, query: event.target.value }))
@@ -259,7 +272,7 @@ export function MembersPageSection() {
 
             <div className="members-filters">
               <label className="members-filter">
-                <span>Location</span>
+                <span>{t("members.location_label", "Location")}</span>
                 <select
                   className="magic-input members-select"
                   value={filters.location}
@@ -270,7 +283,9 @@ export function MembersPageSection() {
                     }))
                   }
                 >
-                  <option value="">All locations</option>
+                  <option value="">
+                    {t("members.all_locations", "All locations")}
+                  </option>
                   {locationOptions.map((option) => (
                     <option key={option} value={option.toLowerCase()}>
                       {option}
@@ -282,15 +297,23 @@ export function MembersPageSection() {
           </section>
 
           <p className="flow-muted">
-            Showing {filteredMembers.length} of {directoryMembers.length} member profiles.
+            {t(
+              "members.showing",
+              "Showing {shown} of {total} member profiles.",
+            )
+              .replace("{shown}", String(filteredMembers.length))
+              .replace("{total}", String(directoryMembers.length))}
           </p>
 
           <section className="members-grid">
             {filteredMembers.length === 0 ? (
               <article className="flow-card members-empty-state">
-                <h3>No members found</h3>
+                <h3>{t("members.empty_title", "No members found")}</h3>
                 <p className="flow-muted">
-                  Try changing filters or clear them to see all approved members.
+                  {t(
+                    "members.empty_description",
+                    "Try changing filters or clear them to see all approved members.",
+                  )}
                 </p>
               </article>
             ) : (
@@ -303,9 +326,9 @@ export function MembersPageSection() {
           {state.currentUser ? (
             <section className="flow-card my-profile-section">
               <div className="my-profile-header">
-                <h2>My profile</h2>
+                <h2>{t("members.my_profile_title", "My profile")}</h2>
                 <p className="flow-description">
-                  View and update your profile anytime.
+                  {t("members.my_profile_description", "View and update your profile anytime.")}
                 </p>
               </div>
               <MemberDirectoryCard member={state.currentUser} isCurrentUser />
@@ -313,17 +336,17 @@ export function MembersPageSection() {
           ) : null}
 
           <footer className="footer members-footer">
-            <p>We respect your privacy. No spam, ever.</p>
+            <p>{t("footer.privacy_notice", "We respect your privacy. No spam, ever.")}</p>
             <p>
               <Link href="/privacy" className="inline-link">
-                Privacy Policy
+                {t("footer.privacy_policy", "Privacy Policy")}
               </Link>{" "}
               -{" "}
               <Link href="/terms" className="inline-link">
-                Terms of Service
+                {t("footer.terms", "Terms of Service")}
               </Link>
             </p>
-            <p className="copyright">Vector Network © 2026</p>
+            <p className="copyright">{t("footer.copyright", "Vector Network © 2026")}</p>
           </footer>
         </main>
       </div>
@@ -340,6 +363,7 @@ function MemberDirectoryCard({
   member,
   isCurrentUser = false,
 }: MemberDirectoryCardProps) {
+  const { t } = useI18n();
   const links = buildProfileLinkMap(member);
   const connect = buildConnectAction(member.contact, member.full_name);
   const meta = [member.role_title, member.country].filter(Boolean).join(" | ");
@@ -358,27 +382,35 @@ function MemberDirectoryCard({
 
       <div className="member-sections">
         <div>
-          <span className="member-section-title">What they do</span>
+          <span className="member-section-title">
+            {t("members.card.what_they_do", "What they do")}
+          </span>
           <ExpandableText text={member.about} collapseAt={190} />
         </div>
 
         {member.building ? (
           <div>
-            <span className="member-section-title">Building</span>
+            <span className="member-section-title">
+              {t("members.card.building", "Building")}
+            </span>
             <ExpandableText text={member.building} collapseAt={170} />
           </div>
         ) : null}
 
         {member.looking_for ? (
           <div>
-            <span className="member-section-title">Looking for</span>
+            <span className="member-section-title">
+              {t("members.card.looking_for", "Looking for")}
+            </span>
             <ExpandableText text={member.looking_for} collapseAt={170} />
           </div>
         ) : null}
       </div>
 
       <div className="member-contact-card">
-        <span className="member-contact-title">Contact</span>
+        <span className="member-contact-title">
+          {t("members.card.contact", "Contact")}
+        </span>
         {connect ? (
           <a
             href={connect.href}
@@ -393,7 +425,9 @@ function MemberDirectoryCard({
             <span>{connect.value}</span>
           </a>
         ) : (
-          <p className="member-contact member-contact--empty">Not provided</p>
+          <p className="member-contact member-contact--empty">
+            {t("members.card.not_provided", "Not provided")}
+          </p>
         )}
       </div>
 
@@ -401,7 +435,7 @@ function MemberDirectoryCard({
         <div className="member-links">
           {links.map((link) => (
             <a key={link.key} href={link.href} target="_blank" rel="noreferrer">
-              {link.label}
+              {t(`members.links.${link.key}`, link.label)}
             </a>
           ))}
         </div>
@@ -409,12 +443,14 @@ function MemberDirectoryCard({
 
       <div className="member-actions">
         <Link href={`/profile/${member.id}`} className="primary-button member-action">
-          {isCurrentUser ? "View my profile" : "View profile"}
+          {isCurrentUser
+            ? t("members.card.view_my_profile", "View my profile")
+            : t("members.card.view_profile", "View profile")}
         </Link>
 
         {isCurrentUser ? (
           <Link href="/onboarding?edit=1" className="secondary-button member-action">
-            Edit my profile
+            {t("members.card.edit_my_profile", "Edit my profile")}
           </Link>
         ) : connect ? (
           <a
@@ -427,7 +463,13 @@ function MemberDirectoryCard({
               method={connect.method}
               className="contact-icon contact-icon--tiny"
             />
-            {connect.label}
+            {connect.method === "telegram"
+              ? t("members.card.connect_telegram", "Telegram")
+              : connect.method === "email"
+                ? t("members.card.connect_email", "Email")
+                : connect.method === "link"
+                  ? t("members.card.connect_open", "Open contact")
+                  : t("members.card.connect", "Connect")}
           </a>
         ) : (
           <button
@@ -435,7 +477,7 @@ function MemberDirectoryCard({
             className="secondary-button member-action member-action--disabled"
             disabled
           >
-            Connect
+            {t("members.card.connect", "Connect")}
           </button>
         )}
       </div>

@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/components/providers/language-provider";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
 import { ExpandableText } from "@/components/ui/expandable-text";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import {
   buildConnectAction,
   buildProfileLinkMap,
@@ -33,6 +35,7 @@ export function MemberProfilePageSection({
   memberId,
 }: MemberProfilePageSectionProps) {
   const router = useRouter();
+  const { t } = useI18n();
   const [state, setState] = useState<ProfilePageState>({
     isLoading: true,
     error: null,
@@ -52,8 +55,10 @@ export function MemberProfilePageSection({
     if (!supabase) {
       setState({
         isLoading: false,
-        error:
+        error: t(
+          "member_profile.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        ),
         currentUser: null,
         targetMember: null,
       });
@@ -86,7 +91,7 @@ export function MemberProfilePageSection({
           isLoading: false,
           error:
             buildProfileTableHint(currentProfileError) ??
-            "Failed to load your profile.",
+            t("member_profile.errors.load_your_profile", "Failed to load your profile."),
           currentUser: null,
           targetMember: null,
         });
@@ -114,7 +119,7 @@ export function MemberProfilePageSection({
           isLoading: false,
           error:
             buildProfileTableHint(targetMemberError) ??
-            "Failed to load member profile.",
+            t("member_profile.errors.load_member_profile", "Failed to load member profile."),
           currentUser: currentProfile,
           targetMember: null,
         });
@@ -124,7 +129,10 @@ export function MemberProfilePageSection({
       if (!targetMember) {
         setState({
           isLoading: false,
-          error: "Member profile not found or access is restricted.",
+          error: t(
+            "member_profile.errors.not_found_or_restricted",
+            "Member profile not found or access is restricted.",
+          ),
           currentUser: currentProfile,
           targetMember: null,
         });
@@ -144,7 +152,7 @@ export function MemberProfilePageSection({
     return () => {
       isActive = false;
     };
-  }, [memberId, router, supabase]);
+  }, [memberId, router, supabase, t]);
 
   async function handleSignOut() {
     if (!supabase) {
@@ -160,7 +168,9 @@ export function MemberProfilePageSection({
       <div className="page-shell">
         <div className="page-gradient" aria-hidden="true" />
         <main className="flow-shell">
-          <p className="auth-description">Loading profile...</p>
+          <p className="auth-description">
+            {t("member_profile.loading", "Loading profile...")}
+          </p>
         </main>
       </div>
     );
@@ -173,10 +183,10 @@ export function MemberProfilePageSection({
         <main className="flow-shell flow-shell--narrow">
           <section className="flow-card">
             <p className="form-message form-message--error">
-              {state.error ?? "Member profile not found."}
+              {state.error ?? t("member_profile.errors.not_found", "Member profile not found.")}
             </p>
             <Link href="/members" className="secondary-button">
-              Back to members
+              {t("common.nav.back_to_members", "Back to members")}
             </Link>
           </section>
         </main>
@@ -199,15 +209,16 @@ export function MemberProfilePageSection({
           <div className="top-nav-inner">
             <span className="brand">Vector Network</span>
             <div className="members-nav-actions">
+              <LanguageSwitcher />
               <Link href="/members" className="join-pill">
-                Members
+                {t("common.nav.members", "Members")}
               </Link>
               <button
                 type="button"
                 className="join-pill join-pill--ghost"
                 onClick={handleSignOut}
               >
-                Sign out
+                {t("common.nav.sign_out", "Sign out")}
               </button>
             </div>
           </div>
@@ -217,16 +228,19 @@ export function MemberProfilePageSection({
           <section className="member-profile-head">
             <h1 className="flow-title">{member.full_name}</h1>
             <p className="flow-description">
-              Full member card from the Vector Network directory.
+              {t(
+                "member_profile.description",
+                "Full member card from the Vector Network directory.",
+              )}
             </p>
 
             <div className="member-profile-head-actions">
               <Link href="/members" className="secondary-button">
-                Back to members
+                {t("common.nav.back_to_members", "Back to members")}
               </Link>
               {isCurrentUser ? (
                 <Link href="/onboarding?edit=1" className="primary-button">
-                  Edit my profile
+                  {t("member_profile.edit_my_profile", "Edit my profile")}
                 </Link>
               ) : connect ? (
                 <a
@@ -239,7 +253,13 @@ export function MemberProfilePageSection({
                     method={connect.method}
                     className="contact-icon contact-icon--tiny"
                   />
-                  {connect.label}
+                  {connect.method === "telegram"
+                    ? t("members.card.connect_telegram", "Telegram")
+                    : connect.method === "email"
+                      ? t("members.card.connect_email", "Email")
+                      : connect.method === "link"
+                        ? t("members.card.connect_open", "Open contact")
+                        : t("members.card.connect", "Connect")}
                 </a>
               ) : null}
             </div>
@@ -258,27 +278,35 @@ export function MemberProfilePageSection({
 
             <div className="member-sections">
               <div>
-                <span className="member-section-title">What they do</span>
+                <span className="member-section-title">
+                  {t("members.card.what_they_do", "What they do")}
+                </span>
                 <ExpandableText text={member.about} collapseAt={520} />
               </div>
 
               {member.building ? (
                 <div>
-                  <span className="member-section-title">Building</span>
+                  <span className="member-section-title">
+                    {t("members.card.building", "Building")}
+                  </span>
                   <ExpandableText text={member.building} collapseAt={380} />
                 </div>
               ) : null}
 
               {member.looking_for ? (
                 <div>
-                  <span className="member-section-title">Looking for</span>
+                  <span className="member-section-title">
+                    {t("members.card.looking_for", "Looking for")}
+                  </span>
                   <ExpandableText text={member.looking_for} collapseAt={380} />
                 </div>
               ) : null}
             </div>
 
             <div className="member-contact-card">
-              <span className="member-contact-title">Contact</span>
+              <span className="member-contact-title">
+                {t("members.card.contact", "Contact")}
+              </span>
               {connect ? (
                 <a
                   href={connect.href}
@@ -293,7 +321,9 @@ export function MemberProfilePageSection({
                   <span>{connect.value}</span>
                 </a>
               ) : (
-                <p className="member-contact member-contact--empty">Not provided</p>
+                <p className="member-contact member-contact--empty">
+                  {t("members.card.not_provided", "Not provided")}
+                </p>
               )}
             </div>
 
@@ -306,7 +336,7 @@ export function MemberProfilePageSection({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {link.label}
+                    {t(`members.links.${link.key}`, link.label)}
                   </a>
                 ))}
               </div>
@@ -314,7 +344,10 @@ export function MemberProfilePageSection({
 
             {isCurrentUser ? (
               <p className="flow-muted member-profile-note">
-                Profile changes are submitted for review again.
+                {t(
+                  "member_profile.review_note",
+                  "Profile changes are submitted for review again.",
+                )}
               </p>
             ) : null}
           </article>

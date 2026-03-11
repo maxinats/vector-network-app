@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmailPasswordAuthForm } from "@/components/forms/email-password-auth-form";
+import { useI18n } from "@/components/providers/language-provider";
 import {
   buildProfileTableHint,
   fetchCurrentMemberProfile,
@@ -12,6 +13,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function AuthPageSection() {
   const router = useRouter();
+  const { t } = useI18n();
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,7 +37,8 @@ export function AuthPageSection() {
       const { profile, error } = await fetchCurrentMemberProfile(supabase, userId);
       if (error) {
         setErrorMessage(
-          buildProfileTableHint(error) ?? "Failed to resolve your access route.",
+          buildProfileTableHint(error) ??
+            t("auth_page.errors.resolve_access", "Failed to resolve your access route."),
         );
         setShowLoginForm(true);
         setIsCheckingSession(false);
@@ -44,7 +47,7 @@ export function AuthPageSection() {
 
       router.replace(resolveRouteByProfile(profile));
     },
-    [router, supabase],
+    [router, supabase, t],
   );
 
   useEffect(() => {
@@ -60,7 +63,10 @@ export function AuthPageSection() {
   useEffect(() => {
     if (!supabase) {
       setErrorMessage(
-        "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        t(
+          "auth_page.errors.supabase_not_configured",
+          "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        ),
       );
       setIsCheckingSession(false);
       return;
@@ -102,7 +108,7 @@ export function AuthPageSection() {
       isActive = false;
       listener.subscription.unsubscribe();
     };
-  }, [resolveUserAccess, supabase]);
+  }, [resolveUserAccess, supabase, t]);
 
   const handleAuthenticated = useCallback(
     async (userId: string) => {
@@ -118,10 +124,12 @@ export function AuthPageSection() {
     <div className="page-shell">
       <div className="page-gradient" aria-hidden="true" />
       <main className="auth-shell">
-        <h1>Account access</h1>
+        <h1>{t("auth_page.title", "Account access")}</h1>
         <p className="auth-description">
-          Sign up with email and password, confirm by code, then log in with
-          password.
+          {t(
+            "auth_page.description",
+            "Sign up with email and password, confirm by code, then log in with password.",
+          )}
         </p>
 
         {errorMessage ? (
@@ -132,13 +140,13 @@ export function AuthPageSection() {
 
         {isCheckingSession ? (
           <div className="auth-panel">
-            <p>Checking session and resolving your access...</p>
+            <p>{t("auth_page.checking", "Checking session and resolving your access...")}</p>
           </div>
         ) : null}
 
         {!isCheckingSession && !showLoginForm && !errorMessage ? (
           <div className="auth-panel">
-            <p>Redirecting...</p>
+            <p>{t("auth_page.redirecting", "Redirecting...")}</p>
           </div>
         ) : null}
 

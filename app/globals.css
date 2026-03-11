@@ -100,12 +100,13 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  min-height: 48px;
   padding: 0 16px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: #1c1c1c;
   backdrop-filter: blur(6px);
+  gap: 8px;
 }
 
 .brand {
@@ -136,7 +137,146 @@ select {
 .members-nav-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.top-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.language-switcher {
+  position: relative;
+}
+
+.language-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.language-icon-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.language-icon-button[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.language-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 220px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #151515;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+  z-index: 60;
+}
+
+.language-menu-title {
+  margin: 0;
+  padding: 2px 8px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.language-option:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.language-option:disabled {
+  color: rgba(255, 255, 255, 0.45);
+  cursor: not-allowed;
+}
+
+.language-option-mark {
+  width: 12px;
+  color: #8fcb6a;
+}
+
+.language-option--selected {
+  font-weight: 700;
+}
+
+.language-hint {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #111111;
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  z-index: 55;
+}
+
+.language-hint p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.language-hint-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.language-hint-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #8fcb6a;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.language-hint-link--muted {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
 }
 
 .main-content {
@@ -1060,6 +1200,27 @@ select {
 
 .member-profile-note {
   margin-top: 6px;
+}
+
+@media (max-width: 420px) {
+  .top-nav-inner {
+    padding: 8px 10px;
+  }
+
+  .join-pill {
+    padding: 0 12px;
+    font-size: 11px;
+  }
+
+  .language-icon-button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .language-menu,
+  .language-hint {
+    width: min(220px, calc(100vw - 28px));
+  }
 }
 
 @media (min-width: 760px) {

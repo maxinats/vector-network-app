@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/components/providers/language-provider";
 import {
   buildProfileTableHint,
   fetchCurrentMemberProfile,
@@ -18,6 +19,7 @@ type PendingState = {
 
 export function PendingPageSection() {
   const router = useRouter();
+  const { t } = useI18n();
   const [state, setState] = useState<PendingState>({
     profile: null,
     isLoading: true,
@@ -37,8 +39,10 @@ export function PendingPageSection() {
       setState({
         profile: null,
         isLoading: false,
-        error:
+        error: t(
+          "pending.errors.supabase_not_configured",
           "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        ),
       });
       return;
     }
@@ -68,7 +72,7 @@ export function PendingPageSection() {
           isLoading: false,
           error:
             buildProfileTableHint(error) ??
-            "Failed to load your application status.",
+            t("pending.errors.load_status", "Failed to load your application status."),
         });
         return;
       }
@@ -97,7 +101,7 @@ export function PendingPageSection() {
       isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [router, supabase]);
+  }, [router, supabase, t]);
 
   async function handleSignOut() {
     if (!supabase) {
@@ -113,7 +117,9 @@ export function PendingPageSection() {
       <div className="page-shell">
         <div className="page-gradient" aria-hidden="true" />
         <main className="flow-shell">
-          <p className="auth-description">Checking your application status...</p>
+          <p className="auth-description">
+            {t("pending.loading", "Checking your application status...")}
+          </p>
         </main>
       </div>
     );
@@ -127,7 +133,7 @@ export function PendingPageSection() {
           <section className="flow-card">
             <p className="form-message form-message--error">{state.error}</p>
             <Link href="/onboarding" className="primary-button auth-button-link">
-              Open onboarding
+              {t("pending.open_onboarding", "Open onboarding")}
             </Link>
           </section>
         </main>
@@ -142,23 +148,28 @@ export function PendingPageSection() {
       <div className="page-gradient" aria-hidden="true" />
       <main className="flow-shell flow-shell--narrow">
         <h1 className="flow-title">
-          {isRejected ? "Application rejected" : "Application in review"}
+          {isRejected
+            ? t("pending.title_rejected", "Application rejected")
+            : t("pending.title_pending", "Application in review")}
         </h1>
         <p className="flow-description">
           {isRejected
-            ? "Update your profile and submit it again."
-            : "Our team is reviewing your profile. This page updates automatically."}
+            ? t("pending.description_rejected", "Update your profile and submit it again.")
+            : t(
+                "pending.description_pending",
+                "Our team is reviewing your profile. This page updates automatically.",
+              )}
         </p>
 
         <section className="flow-card pending-card">
           <p className={isRejected ? "pending-badge rejected" : "pending-badge pending"}>
-            Status: {state.profile?.review_status}
+            {t("pending.status_label", "Status:")} {state.profile?.review_status}
           </p>
 
           <div className="pending-actions">
             {isRejected ? (
               <Link href="/onboarding" className="primary-button auth-button-link">
-                Edit application
+                {t("pending.edit_application", "Edit application")}
               </Link>
             ) : (
               <button
@@ -166,7 +177,7 @@ export function PendingPageSection() {
                 className="secondary-button"
                 onClick={() => window.location.reload()}
               >
-                Refresh status now
+                {t("pending.refresh_now", "Refresh status now")}
               </button>
             )}
 
@@ -175,7 +186,7 @@ export function PendingPageSection() {
               className="secondary-button"
               onClick={handleSignOut}
             >
-              Sign out
+              {t("common.nav.sign_out", "Sign out")}
             </button>
           </div>
         </section>

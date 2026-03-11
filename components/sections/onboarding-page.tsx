@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useI18n } from "@/components/providers/language-provider";
 import { ContactMethodIcon } from "@/components/ui/contact-method-icon";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import {
   formatContactForStorage,
   isLikelyHttpUrl,
@@ -68,6 +70,7 @@ const FIELD_LIMITS = {
 
 export function OnboardingPageSection() {
   const router = useRouter();
+  const { t } = useI18n();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [contactMethod, setContactMethod] = useState<ContactInputMethod>("telegram");
   const [userId, setUserId] = useState<string | null>(null);
@@ -100,8 +103,10 @@ export function OnboardingPageSection() {
         if (isActive) {
           setStatus({
             type: "error",
-            message:
+            message: t(
+              "onboarding.errors.supabase_not_configured",
               "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+            ),
           });
           setIsLoading(false);
         }
@@ -136,7 +141,10 @@ export function OnboardingPageSection() {
           type: "error",
           message:
             buildProfileTableHint(error) ??
-            "Failed to load profile data from Supabase.",
+            t(
+              "onboarding.errors.load_profile",
+              "Failed to load profile data from Supabase.",
+            ),
         });
         setIsLoading(false);
         return;
@@ -165,7 +173,7 @@ export function OnboardingPageSection() {
     return () => {
       isActive = false;
     };
-  }, [router, supabase]);
+  }, [router, supabase, t]);
 
   useEffect(() => {
     autoResizeTextarea(aboutRef.current);
@@ -186,12 +194,12 @@ export function OnboardingPageSection() {
       return;
     }
 
-    const validationErrors = validateForm(form, contactMethod);
+    const validationErrors = validateForm(form, contactMethod, t);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setStatus({
         type: "error",
-        message: "Please fix highlighted fields.",
+        message: t("onboarding.status.fix_fields", "Please fix highlighted fields."),
       });
       return;
     }
@@ -218,7 +226,8 @@ export function OnboardingPageSection() {
       setStatus({
         type: "error",
         message:
-          buildProfileTableHint(error) ?? "Failed to submit onboarding profile.",
+          buildProfileTableHint(error) ??
+            t("onboarding.errors.submit_profile", "Failed to submit onboarding profile."),
       });
       setIsSubmitting(false);
       return;
@@ -258,7 +267,9 @@ export function OnboardingPageSection() {
       <div className="page-shell">
         <div className="page-gradient" aria-hidden="true" />
         <main className="flow-shell">
-          <p className="auth-description">Loading onboarding...</p>
+          <p className="auth-description">
+            {t("onboarding.loading", "Loading onboarding...")}
+          </p>
         </main>
       </div>
     );
@@ -272,40 +283,59 @@ export function OnboardingPageSection() {
         <header className="top-nav">
           <div className="top-nav-inner">
             <span className="brand">Vector Network</span>
-            <Link href={isEditMode ? "/members" : "/"} className="join-pill">
-              {isEditMode ? "Back to members" : "Back on main"}
-            </Link>
+            <div className="top-nav-actions">
+              <LanguageSwitcher />
+              <Link href={isEditMode ? "/members" : "/"} className="join-pill">
+                {isEditMode
+                  ? t("common.nav.back_to_members", "Back to members")
+                  : t("common.nav.back_to_main", "Back to main")}
+              </Link>
+            </div>
           </div>
         </header>
 
         <main className="flow-shell flow-shell--narrow">
           <h1 className="flow-title">
-            {isEditMode ? "Edit your profile" : "Create your profile"}
+            {isEditMode
+              ? t("onboarding.title_edit", "Edit your profile")
+              : t("onboarding.title_create", "Create your profile")}
           </h1>
           <p className="flow-description">
             {isEditMode
-              ? "Update your profile card. Changes will be reviewed again."
-              : "Join a curated network of builders and early adopters."}
+              ? t(
+                  "onboarding.description_edit",
+                  "Update your profile card. Changes will be reviewed again.",
+                )
+              : t(
+                  "onboarding.description_create",
+                  "Join a curated network of builders and early adopters.",
+                )}
           </p>
 
           <section className="flow-card">
             <form className="onboarding-form" onSubmit={handleSubmit}>
-              <p className="flow-muted">"*" = Required information</p>
+              <p className="flow-muted">
+                {t("onboarding.required_note", "\"*\" = Required information")}
+              </p>
 
               {hasRejectedState ? (
                 <p className="form-message form-message--error">
-                  Previous application was rejected. Update profile and submit
-                  again.
+                  {t(
+                    "onboarding.rejected_notice",
+                    "Previous application was rejected. Update profile and submit again.",
+                  )}
                 </p>
               ) : null}
 
               <label className="onboarding-field">
-                <span className="onboarding-label">Full name *</span>
+                <span className="onboarding-label">
+                  {t("onboarding.labels.full_name", "Full name *")}
+                </span>
                 <input
                   className={`magic-input ${errors.fullName ? "input-error" : ""}`}
                   value={form.fullName}
                   onChange={(event) => updateField("fullName", event.target.value)}
-                  placeholder="Your name"
+                  placeholder={t("onboarding.placeholders.full_name", "Your name")}
                   maxLength={FIELD_LIMITS.fullName}
                   required
                 />
@@ -317,15 +347,21 @@ export function OnboardingPageSection() {
               </label>
 
               <div className="onboarding-field">
-                <span className="onboarding-label">Preferred contact *</span>
-                <div className="contact-method-switch" role="radiogroup" aria-label="Preferred contact">
+                <span className="onboarding-label">
+                  {t("onboarding.labels.preferred_contact", "Preferred contact *")}
+                </span>
+                <div
+                  className="contact-method-switch"
+                  role="radiogroup"
+                  aria-label={t("onboarding.labels.preferred_contact", "Preferred contact *")}
+                >
                   <button
                     type="button"
                     className={`contact-method-option ${contactMethod === "telegram" ? "active" : ""}`}
                     onClick={() => updateContactMethod("telegram")}
                   >
                     <ContactMethodIcon method="telegram" className="contact-option-icon" />
-                    Telegram
+                    {t("onboarding.contact.telegram", "Telegram")}
                   </button>
                   <button
                     type="button"
@@ -333,7 +369,7 @@ export function OnboardingPageSection() {
                     onClick={() => updateContactMethod("email")}
                   >
                     <ContactMethodIcon method="email" className="contact-option-icon" />
-                    Email
+                    {t("onboarding.contact.email", "Email")}
                   </button>
                 </div>
                 <input
@@ -342,27 +378,32 @@ export function OnboardingPageSection() {
                   onChange={(event) => updateField("contact", event.target.value)}
                   placeholder={
                     contactMethod === "telegram"
-                      ? "@telegram_username"
-                      : "your@email.com"
+                      ? t("onboarding.placeholders.contact_telegram", "@telegram_username")
+                      : t("onboarding.placeholders.contact_email", "your@email.com")
                   }
                   maxLength={FIELD_LIMITS.contact}
                   required
                 />
                 <FieldFooter
                   error={errors.contact}
-                  helperText="This will be shown as the contact button in your profile."
+                  helperText={t(
+                    "onboarding.contact_helper",
+                    "This will be shown as the contact button in your profile.",
+                  )}
                   value={form.contact}
                   limit={FIELD_LIMITS.contact}
                 />
               </div>
 
               <label className="onboarding-field">
-                <span className="onboarding-label">Where are you from? *</span>
+                <span className="onboarding-label">
+                  {t("onboarding.labels.country", "Where are you from? *")}
+                </span>
                 <input
                   className={`magic-input ${errors.country ? "input-error" : ""}`}
                   value={form.country}
                   onChange={(event) => updateField("country", event.target.value)}
-                  placeholder="Country"
+                  placeholder={t("onboarding.placeholders.country", "Country")}
                   maxLength={FIELD_LIMITS.country}
                   required
                 />
@@ -374,12 +415,17 @@ export function OnboardingPageSection() {
               </label>
 
               <label className="onboarding-field">
-                <span className="onboarding-label">Role / Title</span>
+                <span className="onboarding-label">
+                  {t("onboarding.labels.role_title", "Role / Title")}
+                </span>
                 <input
                   className={`magic-input ${errors.roleTitle ? "input-error" : ""}`}
                   value={form.roleTitle}
                   onChange={(event) => updateField("roleTitle", event.target.value)}
-                  placeholder="e.g. Product Designer, Founder"
+                  placeholder={t(
+                    "onboarding.placeholders.role_title",
+                    "e.g. Product Designer, Founder",
+                  )}
                   maxLength={FIELD_LIMITS.roleTitle}
                 />
                 <FieldFooter
@@ -390,13 +436,18 @@ export function OnboardingPageSection() {
               </label>
 
               <label className="onboarding-field">
-                <span className="onboarding-label">What do you do? *</span>
+                <span className="onboarding-label">
+                  {t("onboarding.labels.about", "What do you do? *")}
+                </span>
                 <textarea
                   ref={aboutRef}
                   className={`magic-input onboarding-textarea ${errors.about ? "input-error" : ""}`}
                   value={form.about}
                   onChange={(event) => updateField("about", event.target.value)}
-                  placeholder="Tell us about your role, expertise, or what you're passionate about"
+                  placeholder={t(
+                    "onboarding.placeholders.about",
+                    "Tell us about your role, expertise, or what you're passionate about",
+                  )}
                   maxLength={FIELD_LIMITS.about}
                   required
                 />
@@ -408,13 +459,18 @@ export function OnboardingPageSection() {
               </label>
 
               <label className="onboarding-field">
-                <span className="onboarding-label">What are you building?</span>
+                <span className="onboarding-label">
+                  {t("onboarding.labels.building", "What are you building?")}
+                </span>
                 <textarea
                   ref={buildingRef}
                   className={`magic-input onboarding-textarea ${errors.building ? "input-error" : ""}`}
                   value={form.building}
                   onChange={(event) => updateField("building", event.target.value)}
-                  placeholder="Share what you're currently working on"
+                  placeholder={t(
+                    "onboarding.placeholders.building",
+                    "Share what you're currently working on",
+                  )}
                   maxLength={FIELD_LIMITS.building}
                 />
                 <FieldFooter
@@ -425,7 +481,9 @@ export function OnboardingPageSection() {
               </label>
 
               <label className="onboarding-field">
-                <span className="onboarding-label">What are you looking for?</span>
+                <span className="onboarding-label">
+                  {t("onboarding.labels.looking_for", "What are you looking for?")}
+                </span>
                 <textarea
                   ref={lookingForRef}
                   className={`magic-input onboarding-textarea ${errors.lookingFor ? "input-error" : ""}`}
@@ -433,7 +491,10 @@ export function OnboardingPageSection() {
                   onChange={(event) =>
                     updateField("lookingFor", event.target.value)
                   }
-                  placeholder="e.g. collaborators, feedback, early users, opportunities"
+                  placeholder={t(
+                    "onboarding.placeholders.looking_for",
+                    "e.g. collaborators, feedback, early users, opportunities",
+                  )}
                   maxLength={FIELD_LIMITS.lookingFor}
                 />
                 <FieldFooter
@@ -443,17 +504,19 @@ export function OnboardingPageSection() {
                 />
               </label>
 
-              <div className="onboarding-group-title">Links</div>
+              <div className="onboarding-group-title">
+                {t("onboarding.labels.links", "Links")}
+              </div>
 
               <label className="onboarding-field">
                 <span className="onboarding-label onboarding-label--light">
-                  Website / portfolio
+                  {t("onboarding.labels.website", "Website / portfolio")}
                 </span>
                 <input
                   className={`magic-input ${errors.website ? "input-error" : ""}`}
                   value={form.website}
                   onChange={(event) => updateField("website", event.target.value)}
-                  placeholder="https://yourwebsite.com"
+                  placeholder={t("onboarding.placeholders.website", "https://yourwebsite.com")}
                   maxLength={FIELD_LIMITS.website}
                 />
                 <FieldFooter
@@ -465,13 +528,13 @@ export function OnboardingPageSection() {
 
               <label className="onboarding-field">
                 <span className="onboarding-label onboarding-label--light">
-                  X / Twitter
+                  {t("onboarding.labels.twitter", "X / Twitter")}
                 </span>
                 <input
                   className={`magic-input ${errors.twitter ? "input-error" : ""}`}
                   value={form.twitter}
                   onChange={(event) => updateField("twitter", event.target.value)}
-                  placeholder="@username"
+                  placeholder={t("onboarding.placeholders.twitter", "@username")}
                   maxLength={FIELD_LIMITS.twitter}
                 />
                 <FieldFooter
@@ -483,13 +546,16 @@ export function OnboardingPageSection() {
 
               <label className="onboarding-field">
                 <span className="onboarding-label onboarding-label--light">
-                  LinkedIn
+                  {t("onboarding.labels.linkedin", "LinkedIn")}
                 </span>
                 <input
                   className={`magic-input ${errors.linkedin ? "input-error" : ""}`}
                   value={form.linkedin}
                   onChange={(event) => updateField("linkedin", event.target.value)}
-                  placeholder="LinkedIn profile URL"
+                  placeholder={t(
+                    "onboarding.placeholders.linkedin",
+                    "LinkedIn profile URL",
+                  )}
                   maxLength={FIELD_LIMITS.linkedin}
                 />
                 <FieldFooter
@@ -502,17 +568,23 @@ export function OnboardingPageSection() {
               <button className="primary-button" type="submit" disabled={isSubmitting}>
                 {isSubmitting
                   ? isEditMode
-                    ? "Saving..."
-                    : "Submitting..."
+                    ? t("onboarding.buttons.saving", "Saving...")
+                    : t("onboarding.buttons.submitting", "Submitting...")
                   : isEditMode
-                    ? "Save changes"
-                    : "Create profile"}
+                    ? t("onboarding.buttons.save_changes", "Save changes")
+                    : t("onboarding.buttons.create_profile", "Create profile")}
               </button>
 
               <p className="flow-muted flow-muted--center">
                 {isEditMode
-                  ? "After saving, your profile returns to pending review."
-                  : "Your profile will be reviewed before becoming visible to the community."}
+                  ? t(
+                      "onboarding.review_note_edit",
+                      "After saving, your profile returns to pending review.",
+                    )
+                  : t(
+                      "onboarding.review_note_create",
+                      "Your profile will be reviewed before becoming visible to the community.",
+                    )}
               </p>
 
               {status ? (
@@ -561,77 +633,158 @@ function buildFormState(
 function validateForm(
   form: FormState,
   contactMethod: ContactInputMethod,
+  translate: (key: string, fallback: string) => string,
 ): FormErrors {
   const nextErrors: FormErrors = {};
 
   if (form.fullName.trim().length < 2) {
-    nextErrors.fullName = "Enter full name (at least 2 characters).";
+    nextErrors.fullName = translate(
+      "onboarding.errors.full_name_short",
+      "Enter full name (at least 2 characters).",
+    );
   } else if (form.fullName.length > FIELD_LIMITS.fullName) {
-    nextErrors.fullName = `Full name must be up to ${FIELD_LIMITS.fullName} characters.`;
+    nextErrors.fullName = translate(
+      "onboarding.errors.full_name_long",
+      "Full name must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.fullName));
   }
 
   const contactError = validateContactInput(contactMethod, form.contact);
   if (contactError) {
-    nextErrors.contact = contactError;
+    nextErrors.contact = mapContactError(contactError, translate);
   } else if (form.contact.length > FIELD_LIMITS.contact) {
-    nextErrors.contact = `Contact must be up to ${FIELD_LIMITS.contact} characters.`;
+    nextErrors.contact = translate(
+      "onboarding.errors.contact_long",
+      "Contact must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.contact));
   }
 
   if (form.country.trim().length < 2) {
-    nextErrors.country = "Enter your country.";
+    nextErrors.country = translate("onboarding.errors.country_short", "Enter your country.");
   } else if (form.country.length > FIELD_LIMITS.country) {
-    nextErrors.country = `Country must be up to ${FIELD_LIMITS.country} characters.`;
+    nextErrors.country = translate(
+      "onboarding.errors.country_long",
+      "Country must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.country));
   }
 
   if (form.roleTitle.trim().length > FIELD_LIMITS.roleTitle) {
-    nextErrors.roleTitle = `Role/Title must be up to ${FIELD_LIMITS.roleTitle} characters.`;
+    nextErrors.roleTitle = translate(
+      "onboarding.errors.role_title_long",
+      "Role/Title must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.roleTitle));
   }
 
   if (form.about.trim().length < 20) {
-    nextErrors.about = "Describe what you do in at least 20 characters.";
+    nextErrors.about = translate(
+      "onboarding.errors.about_short",
+      "Describe what you do in at least 20 characters.",
+    );
   } else if (form.about.trim().length > FIELD_LIMITS.about) {
-    nextErrors.about = `About text must be up to ${FIELD_LIMITS.about} characters.`;
+    nextErrors.about = translate(
+      "onboarding.errors.about_long",
+      "About text must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.about));
   }
 
   if (form.building.trim().length > FIELD_LIMITS.building) {
-    nextErrors.building = `Building text must be up to ${FIELD_LIMITS.building} characters.`;
+    nextErrors.building = translate(
+      "onboarding.errors.building_long",
+      "Building text must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.building));
   }
 
   if (form.lookingFor.trim().length > FIELD_LIMITS.lookingFor) {
-    nextErrors.lookingFor = `Looking for text must be up to ${FIELD_LIMITS.lookingFor} characters.`;
+    nextErrors.lookingFor = translate(
+      "onboarding.errors.looking_for_long",
+      "Looking for text must be up to {limit} characters.",
+    ).replace("{limit}", String(FIELD_LIMITS.lookingFor));
   }
 
   if (form.website.trim()) {
     if (form.website.length > FIELD_LIMITS.website) {
-      nextErrors.website = `Website must be up to ${FIELD_LIMITS.website} characters.`;
+      nextErrors.website = translate(
+        "onboarding.errors.website_long",
+        "Website must be up to {limit} characters.",
+      ).replace("{limit}", String(FIELD_LIMITS.website));
     } else if (!isLikelyHttpUrl(form.website)) {
-      nextErrors.website = "Enter a valid website URL.";
+      nextErrors.website = translate(
+        "onboarding.errors.website_invalid",
+        "Enter a valid website URL.",
+      );
     }
   }
 
   if (form.linkedin.trim()) {
     if (form.linkedin.length > FIELD_LIMITS.linkedin) {
-      nextErrors.linkedin = `LinkedIn must be up to ${FIELD_LIMITS.linkedin} characters.`;
+      nextErrors.linkedin = translate(
+        "onboarding.errors.linkedin_long",
+        "LinkedIn must be up to {limit} characters.",
+      ).replace("{limit}", String(FIELD_LIMITS.linkedin));
     } else if (!isLikelyHttpUrl(form.linkedin)) {
-      nextErrors.linkedin = "Enter a valid LinkedIn URL.";
+      nextErrors.linkedin = translate(
+        "onboarding.errors.linkedin_invalid",
+        "Enter a valid LinkedIn URL.",
+      );
     }
   }
 
   if (form.twitter.trim()) {
     const normalized = form.twitter.trim();
     if (normalized.length > FIELD_LIMITS.twitter) {
-      nextErrors.twitter = `Twitter must be up to ${FIELD_LIMITS.twitter} characters.`;
+      nextErrors.twitter = translate(
+        "onboarding.errors.twitter_long",
+        "Twitter must be up to {limit} characters.",
+      ).replace("{limit}", String(FIELD_LIMITS.twitter));
       return nextErrors;
     }
 
     const isHandle = /^@?[A-Za-z0-9_]{1,15}$/.test(normalized);
     const isUrl = isLikelyHttpUrl(normalized);
     if (!isHandle && !isUrl) {
-      nextErrors.twitter = "Use @username or a full profile URL.";
+      nextErrors.twitter = translate(
+        "onboarding.errors.twitter_invalid",
+        "Use @username or a full profile URL.",
+      );
     }
   }
 
   return nextErrors;
+}
+
+function mapContactError(
+  error: string,
+  translate: (key: string, fallback: string) => string,
+) {
+  if (error === "Contact is required.") {
+    return translate("onboarding.errors.contact_required", "Contact is required.");
+  }
+
+  if (error === "Enter a valid email address.") {
+    return translate(
+      "onboarding.errors.contact_email_invalid",
+      "Enter a valid email address.",
+    );
+  }
+
+  if (error === "Enter Telegram username like @yourname.") {
+    return translate(
+      "onboarding.errors.contact_telegram_invalid",
+      "Enter Telegram username like @yourname.",
+    );
+  }
+
+  if (
+    error ===
+    "Telegram username must be 5-32 characters and contain letters, numbers or underscore."
+  ) {
+    return translate(
+      "onboarding.errors.contact_telegram_length",
+      "Telegram username must be 5-32 characters and contain letters, numbers or underscore.",
+    );
+  }
+
+  return error;
 }
 
 function detectCountryFromLocale() {

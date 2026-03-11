@@ -1,0 +1,289 @@
+{
+  "common": {
+    "language": {
+      "label": "Language",
+      "options": {
+        "en": "English",
+        "ru": "Русский",
+        "de_soon": "Deutsch (coming soon)",
+        "es_soon": "Español (coming soon)",
+        "fr_soon": "Français (coming soon)"
+      },
+      "ru_hint": "Your browser is in Russian. Switch interface language?",
+      "ru_hint_action": "Switch to Russian",
+      "keep_en_action": "Keep English"
+    },
+    "nav": {
+      "home": "Home",
+      "members": "Members",
+      "sign_out": "Sign out",
+      "back_to_members": "Back to members",
+      "back_to_main": "Back to main"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "back": "Back"
+    },
+    "status": {
+      "loading": "Loading...",
+      "error": "Something went wrong."
+    }
+  },
+  "footer": {
+    "privacy_notice": "We respect your privacy. No spam, ever.",
+    "privacy_policy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "Vector Network © 2026"
+  },
+  "home": {
+    "nav": {
+      "join": "Join the network"
+    },
+    "hero": {
+      "badge": "Free - Builders and enthusiasts",
+      "title": "Connect With Builders",
+      "subtitle": "Discover relevant people",
+      "description": "A High-Signal Network for Builders and Early Teams",
+      "member_chip_subtitle": "Where ambitions meet initiatives"
+    },
+    "features": {
+      "title": "What You Can Do Inside",
+      "discover": {
+        "title": "Discover builders",
+        "text": "Browse profiles of people working on startups, products, and side projects."
+      },
+      "connect": {
+        "title": "Connect directly",
+        "text": "Reach out to members for ideas, feedback, and collaborations."
+      },
+      "opportunities": {
+        "title": "Find opportunities",
+        "text": "Discover talents, partnerships, and early-stage teams."
+      },
+      "showcase": {
+        "title": "Show what you're building",
+        "text": "Create your profile and share your ideas with the network."
+      }
+    },
+    "afterword": {
+      "line1": "A curated network of builders and ambitious people.",
+      "line2": "Profiles are reviewed to keep the network high-signal."
+    }
+  },
+  "landing_form": {
+    "safe_note": "Your data is safe. No spam, ever.",
+    "email_label": "Email address",
+    "email_placeholder": "Email address",
+    "agree_prefix": "I agree with",
+    "get_access": "Get Access ->",
+    "already_joined": "Already joined?",
+    "log_in": "Log in",
+    "errors": {
+      "email_required": "Enter your email address.",
+      "privacy_required": "Please accept Privacy Policy before continuing."
+    }
+  },
+  "auth_page": {
+    "title": "Account access",
+    "description": "Sign up with email and password, confirm by code, then log in with password.",
+    "checking": "Checking session and resolving your access...",
+    "redirecting": "Redirecting...",
+    "errors": {
+      "resolve_access": "Failed to resolve your access route.",
+      "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    }
+  },
+  "auth_form": {
+    "tabs": {
+      "log_in": "Log in",
+      "sign_up": "Sign up"
+    },
+    "placeholders": {
+      "email": "Email",
+      "password": "Password",
+      "password_min": "Password (min 6 chars)",
+      "confirm_password": "Confirm password",
+      "verification_code": "Email verification code"
+    },
+    "buttons": {
+      "signing_in": "Signing in...",
+      "log_in": "Log in",
+      "creating_account": "Creating account...",
+      "create_account": "Create account",
+      "verifying": "Verifying...",
+      "verify_code": "Verify code",
+      "resend_code": "Resend code"
+    },
+    "status": {
+      "account_created_verify": "Account created. Enter the verification code sent to your email.",
+      "code_resent": "Verification code was sent again."
+    },
+    "verification_email_label": "Verification email:",
+    "errors": {
+      "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "enter_email_password": "Enter email and password.",
+      "password_min_length": "Password must be at least 6 characters.",
+      "passwords_mismatch": "Passwords do not match.",
+      "resolve_user_after_signin": "Failed to resolve user after sign in.",
+      "enter_verification_code": "Enter verification code from your email.",
+      "verification_failed": "Verification failed. Try requesting code again."
+    }
+  },
+  "onboarding": {
+    "loading": "Loading onboarding...",
+    "title_create": "Create your profile",
+    "title_edit": "Edit your profile",
+    "description_create": "Join a curated network of builders and early adopters.",
+    "description_edit": "Update your profile card. Changes will be reviewed again.",
+    "required_note": "\"*\" = Required information",
+    "rejected_notice": "Previous application was rejected. Update profile and submit again.",
+    "contact": {
+      "telegram": "Telegram",
+      "email": "Email"
+    },
+    "contact_helper": "This will be shown as the contact button in your profile.",
+    "labels": {
+      "full_name": "Full name *",
+      "preferred_contact": "Preferred contact *",
+      "country": "Where are you from? *",
+      "role_title": "Role / Title",
+      "about": "What do you do? *",
+      "building": "What are you building?",
+      "looking_for": "What are you looking for?",
+      "links": "Links",
+      "website": "Website / portfolio",
+      "twitter": "X / Twitter",
+      "linkedin": "LinkedIn"
+    },
+    "placeholders": {
+      "full_name": "Your name",
+      "contact_telegram": "@telegram_username",
+      "contact_email": "your@email.com",
+      "country": "Country",
+      "role_title": "e.g. Product Designer, Founder",
+      "about": "Tell us about your role, expertise, or what you're passionate about",
+      "building": "Share what you're currently working on",
+      "looking_for": "e.g. collaborators, feedback, early users, opportunities",
+      "website": "https://yourwebsite.com",
+      "twitter": "@username",
+      "linkedin": "LinkedIn profile URL"
+    },
+    "buttons": {
+      "saving": "Saving...",
+      "submitting": "Submitting...",
+      "save_changes": "Save changes",
+      "create_profile": "Create profile"
+    },
+    "review_note_edit": "After saving, your profile returns to pending review.",
+    "review_note_create": "Your profile will be reviewed before becoming visible to the community.",
+    "status": {
+      "fix_fields": "Please fix highlighted fields."
+    },
+    "errors": {
+      "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_profile": "Failed to load profile data from Supabase.",
+      "submit_profile": "Failed to submit onboarding profile.",
+      "full_name_short": "Enter full name (at least 2 characters).",
+      "full_name_long": "Full name must be up to {limit} characters.",
+      "contact_required": "Contact is required.",
+      "contact_email_invalid": "Enter a valid email address.",
+      "contact_telegram_invalid": "Enter Telegram username like @yourname.",
+      "contact_telegram_length": "Telegram username must be 5-32 characters and contain letters, numbers or underscore.",
+      "contact_long": "Contact must be up to {limit} characters.",
+      "country_short": "Enter your country.",
+      "country_long": "Country must be up to {limit} characters.",
+      "role_title_long": "Role/Title must be up to {limit} characters.",
+      "about_short": "Describe what you do in at least 20 characters.",
+      "about_long": "About text must be up to {limit} characters.",
+      "building_long": "Building text must be up to {limit} characters.",
+      "looking_for_long": "Looking for text must be up to {limit} characters.",
+      "website_long": "Website must be up to {limit} characters.",
+      "website_invalid": "Enter a valid website URL.",
+      "linkedin_long": "LinkedIn must be up to {limit} characters.",
+      "linkedin_invalid": "Enter a valid LinkedIn URL.",
+      "twitter_long": "Twitter must be up to {limit} characters.",
+      "twitter_invalid": "Use @username or a full profile URL."
+    }
+  },
+  "members": {
+    "loading": "Loading members...",
+    "back_to_pending": "Back to pending",
+    "title": "Members",
+    "description": "Discover people building interesting things and connect with them.",
+    "search_label": "Search members",
+    "search_placeholder": "Search by name, role, location, or what people are building",
+    "location_label": "Location",
+    "all_locations": "All locations",
+    "showing": "Showing {shown} of {total} member profiles.",
+    "empty_title": "No members found",
+    "empty_description": "Try changing filters or clear them to see all approved members.",
+    "my_profile_title": "My profile",
+    "my_profile_description": "View and update your profile anytime.",
+    "links": {
+      "website": "Website",
+      "twitter": "X / Twitter",
+      "linkedin": "LinkedIn"
+    },
+    "card": {
+      "what_they_do": "What they do",
+      "building": "Building",
+      "looking_for": "Looking for",
+      "contact": "Contact",
+      "not_provided": "Not provided",
+      "view_my_profile": "View my profile",
+      "view_profile": "View profile",
+      "edit_my_profile": "Edit my profile",
+      "connect_telegram": "Telegram",
+      "connect_email": "Email",
+      "connect_open": "Open contact",
+      "connect": "Connect"
+    },
+    "errors": {
+      "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_profile": "Failed to load your profile.",
+      "load_list": "Failed to load members list."
+    }
+  },
+  "member_profile": {
+    "loading": "Loading profile...",
+    "description": "Full member card from the Vector Network directory.",
+    "edit_my_profile": "Edit my profile",
+    "review_note": "Profile changes are submitted for review again.",
+    "errors": {
+      "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_your_profile": "Failed to load your profile.",
+      "load_member_profile": "Failed to load member profile.",
+      "not_found_or_restricted": "Member profile not found or access is restricted.",
+      "not_found": "Member profile not found."
+    }
+  },
+  "pending": {
+    "loading": "Checking your application status...",
+    "open_onboarding": "Open onboarding",
+    "title_rejected": "Application rejected",
+    "title_pending": "Application in review",
+    "description_rejected": "Update your profile and submit it again.",
+    "description_pending": "Our team is reviewing your profile. This page updates automatically.",
+    "status_label": "Status:",
+    "edit_application": "Edit application",
+    "refresh_now": "Refresh status now",
+    "errors": {
+      "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_status": "Failed to load your application status."
+    }
+  },
+  "expandable": {
+    "more": "more",
+    "less": "less"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "description": "This page is a placeholder for your full privacy policy."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "description": "This page is a placeholder for your service terms."
+  }
+}

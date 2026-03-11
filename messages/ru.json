@@ -1,0 +1,289 @@
+{
+  "common": {
+    "language": {
+      "label": "Language",
+      "options": {
+        "en": "English",
+        "ru": "Русский",
+        "de_soon": "Deutsch (coming soon)",
+        "es_soon": "Español (coming soon)",
+        "fr_soon": "Français (coming soon)"
+      },
+      "ru_hint": "Похоже, у вас русский язык браузера. Переключить интерфейс?",
+      "ru_hint_action": "Переключить на русский",
+      "keep_en_action": "Оставить English"
+    },
+    "nav": {
+      "home": "Главная",
+      "members": "Участники",
+      "sign_out": "Выйти",
+      "back_to_members": "К участникам",
+      "back_to_main": "Назад на главную"
+    },
+    "actions": {
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "continue": "Продолжить",
+      "back": "Назад"
+    },
+    "status": {
+      "loading": "Загрузка...",
+      "error": "Что-то пошло не так."
+    }
+  },
+  "footer": {
+    "privacy_notice": "Мы уважаем вашу приватность. Никакого спама.",
+    "privacy_policy": "Политика конфиденциальности",
+    "terms": "Условия использования",
+    "copyright": "Vector Network © 2026"
+  },
+  "home": {
+    "nav": {
+      "join": "Присоединиться"
+    },
+    "hero": {
+      "badge": "Бесплатно - стартап сообщество",
+      "title": "Знакомьтесь с энтузиастами",
+      "subtitle": "Находите релевантных людей",
+      "description": "Сообщество создателей, профессионалов и ранних команд",
+      "member_chip_subtitle": "Где амбиции встречают инициативы"
+    },
+    "features": {
+      "title": "Что можно делать внутри",
+      "discover": {
+        "title": "Находить создателей",
+        "text": "Смотрите профили людей, которые делают стартапы, продукты и сайд-проекты."
+      },
+      "connect": {
+        "title": "Связываться напрямую",
+        "text": "Пишите участникам с идеями, фидбеком и коллаборациями."
+      },
+      "opportunities": {
+        "title": "Искать возможности",
+        "text": "Находите таланты, интересные проекты и команды ранней стадии."
+      },
+      "showcase": {
+        "title": "Показывать, что строите",
+        "text": "Создайте профиль и расскажите о своих идеях и мотивации сообществу."
+      }
+    },
+    "afterword": {
+      "line1": "Стартап сообщество создателей и профессионалов.",
+      "line2": "Профили проходят модерацию, чтобы сохранять ценность."
+    }
+  },
+  "landing_form": {
+    "safe_note": "Ваши данные в безопасности. Никакого спама.",
+    "email_label": "Email адрес",
+    "email_placeholder": "Email адрес",
+    "agree_prefix": "Я согласен с",
+    "get_access": "Получить доступ ->",
+    "already_joined": "Уже с нами?",
+    "log_in": "Войти",
+    "errors": {
+      "email_required": "Введите email адрес.",
+      "privacy_required": "Подтвердите Политику конфиденциальности, чтобы продолжить."
+    }
+  },
+  "auth_page": {
+    "title": "Доступ к аккаунту",
+    "description": "Зарегистрируйтесь через email и пароль, подтвердите кодом, затем входите по паролю.",
+    "checking": "Проверяем сессию и доступ...",
+    "redirecting": "Перенаправляем...",
+    "errors": {
+      "resolve_access": "Не удалось определить маршрут доступа.",
+      "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    }
+  },
+  "auth_form": {
+    "tabs": {
+      "log_in": "Войти",
+      "sign_up": "Регистрация"
+    },
+    "placeholders": {
+      "email": "Email",
+      "password": "Пароль",
+      "password_min": "Пароль (минимум 6 символов)",
+      "confirm_password": "Подтвердите пароль",
+      "verification_code": "Код подтверждения из email"
+    },
+    "buttons": {
+      "signing_in": "Входим...",
+      "log_in": "Войти",
+      "creating_account": "Создаем аккаунт...",
+      "create_account": "Создать аккаунт",
+      "verifying": "Проверяем...",
+      "verify_code": "Подтвердить код",
+      "resend_code": "Отправить код снова"
+    },
+    "status": {
+      "account_created_verify": "Аккаунт создан. Введите код подтверждения из письма.",
+      "code_resent": "Код подтверждения отправлен повторно."
+    },
+    "verification_email_label": "Email для подтверждения:",
+    "errors": {
+      "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "enter_email_password": "Введите email и пароль.",
+      "password_min_length": "Пароль должен быть не короче 6 символов.",
+      "passwords_mismatch": "Пароли не совпадают.",
+      "resolve_user_after_signin": "Не удалось определить пользователя после входа.",
+      "enter_verification_code": "Введите код подтверждения из письма.",
+      "verification_failed": "Ошибка подтверждения. Попробуйте запросить код снова."
+    }
+  },
+  "onboarding": {
+    "loading": "Загрузка формы...",
+    "title_create": "Создайте свой профиль",
+    "title_edit": "Редактирование профиля",
+    "description_create": "Присоединяйтесь к стартап сообществу создателей и профессионалов.",
+    "description_edit": "Обновите карточку профиля. Изменения снова пройдут модерацию.",
+    "required_note": "\"*\" = Обязательные поля",
+    "rejected_notice": "Предыдущая заявка была отклонена. Обновите профиль и отправьте снова.",
+    "contact": {
+      "telegram": "Telegram",
+      "email": "Email"
+    },
+    "contact_helper": "Этот контакт будет показан кнопкой в вашем профиле.",
+    "labels": {
+      "full_name": "Полное имя *",
+      "preferred_contact": "Предпочтительный контакт *",
+      "country": "Откуда вы? *",
+      "role_title": "Роль / Должность",
+      "about": "Чем вы занимаетесь? *",
+      "building": "Над чем вы сейчас работаете?",
+      "looking_for": "Что вы ищете?",
+      "links": "Ссылки",
+      "website": "Сайт / портфолио",
+      "twitter": "X / Twitter",
+      "linkedin": "LinkedIn"
+    },
+    "placeholders": {
+      "full_name": "Ваше имя",
+      "contact_telegram": "@telegram_username",
+      "contact_email": "your@email.com",
+      "country": "Страна",
+      "role_title": "например, Product Designer, Founder",
+      "about": "Расскажите о своей роли, экспертизе или интересах",
+      "building": "Поделитесь с участниками вашей деятельностью",
+      "looking_for": "например, сооснователь, фидбек, ранние пользователи, хочу найти проект/команду",
+      "website": "https://yourwebsite.com",
+      "twitter": "@username",
+      "linkedin": "Ссылка на профиль LinkedIn"
+    },
+    "buttons": {
+      "saving": "Сохраняем...",
+      "submitting": "Отправляем...",
+      "save_changes": "Сохранить изменения",
+      "create_profile": "Создать профиль"
+    },
+    "review_note_edit": "После сохранения профиль снова перейдет в статус модерации.",
+    "review_note_create": "Ваш профиль пройдет модерацию перед публикацией в сообществе.",
+    "status": {
+      "fix_fields": "Пожалуйста, исправьте выделенные поля."
+    },
+    "errors": {
+      "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_profile": "Не удалось загрузить данные профиля из Supabase.",
+      "submit_profile": "Не удалось отправить профиль.",
+      "full_name_short": "Введите полное имя (минимум 2 символа).",
+      "full_name_long": "Полное имя должно быть не длиннее {limit} символов.",
+      "contact_required": "Контакт обязателен.",
+      "contact_email_invalid": "Введите корректный email адрес.",
+      "contact_telegram_invalid": "Введите username Telegram в формате @yourname.",
+      "contact_telegram_length": "Username Telegram должен быть 5-32 символа и содержать буквы, цифры или underscore.",
+      "contact_long": "Контакт должен быть не длиннее {limit} символов.",
+      "country_short": "Введите вашу страну.",
+      "country_long": "Страна должна быть не длиннее {limit} символов.",
+      "role_title_long": "Роль/Должность должна быть не длиннее {limit} символов.",
+      "about_short": "Опишите, чем вы занимаетесь, минимум в 20 символах.",
+      "about_long": "Текст о себе должен быть не длиннее {limit} символов.",
+      "building_long": "Описание того, что вы строите, должно быть не длиннее {limit} символов.",
+      "looking_for_long": "Описание того, что вы ищете, должно быть не длиннее {limit} символов.",
+      "website_long": "Сайт должен быть не длиннее {limit} символов.",
+      "website_invalid": "Введите корректный URL сайта.",
+      "linkedin_long": "LinkedIn должен быть не длиннее {limit} символов.",
+      "linkedin_invalid": "Введите корректный URL LinkedIn.",
+      "twitter_long": "Twitter должен быть не длиннее {limit} символов.",
+      "twitter_invalid": "Используйте @username или полный URL профиля."
+    }
+  },
+  "members": {
+    "loading": "Загрузка участников...",
+    "back_to_pending": "Назад к статусу",
+    "title": "Участники",
+    "description": "Находите людей, которые строят интересные вещи, и связывайтесь с ними.",
+    "search_label": "Поиск участников",
+    "search_placeholder": "Поиск по имени, роли, локации или тому, что люди создают",
+    "location_label": "Локация",
+    "all_locations": "Все локации",
+    "showing": "Показано {shown} из {total} профилей.",
+    "empty_title": "Участники не найдены",
+    "empty_description": "Попробуйте изменить фильтры или очистить их, чтобы увидеть всех одобренных участников.",
+    "my_profile_title": "Мой профиль",
+    "my_profile_description": "Вы можете просматривать и обновлять профиль в любое время.",
+    "links": {
+      "website": "Сайт",
+      "twitter": "X / Twitter",
+      "linkedin": "LinkedIn"
+    },
+    "card": {
+      "what_they_do": "Чем занимается",
+      "building": "Над чем рботает",
+      "looking_for": "Что ищет",
+      "contact": "Контакт",
+      "not_provided": "Не указано",
+      "view_my_profile": "Открыть мой профиль",
+      "view_profile": "Открыть профиль",
+      "edit_my_profile": "Редактировать мой профиль",
+      "connect_telegram": "Telegram",
+      "connect_email": "Email",
+      "connect_open": "Открыть контакт",
+      "connect": "Связаться"
+    },
+    "errors": {
+      "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_profile": "Не удалось загрузить ваш профиль.",
+      "load_list": "Не удалось загрузить список участников."
+    }
+  },
+  "member_profile": {
+    "loading": "Загрузка профиля...",
+    "description": "Полная карточка участника из каталога Vector Network.",
+    "edit_my_profile": "Редактировать мой профиль",
+    "review_note": "После изменений профиль снова отправляется на модерацию.",
+    "errors": {
+      "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_your_profile": "Не удалось загрузить ваш профиль.",
+      "load_member_profile": "Не удалось загрузить профиль участника.",
+      "not_found_or_restricted": "Профиль участника не найден или доступ ограничен.",
+      "not_found": "Профиль участника не найден."
+    }
+  },
+  "pending": {
+    "loading": "Проверяем статус вашей заявки...",
+    "open_onboarding": "Открыть форму",
+    "title_rejected": "Заявка отклонена",
+    "title_pending": "Заявка на проверке",
+    "description_rejected": "Обновите профиль и отправьте заявку снова.",
+    "description_pending": "Наша команда проверяет ваш профиль. Страница обновляется автоматически.",
+    "status_label": "Статус:",
+    "edit_application": "Редактировать заявку",
+    "refresh_now": "Обновить статус сейчас",
+    "errors": {
+      "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      "load_status": "Не удалось загрузить статус вашей заявки."
+    }
+  },
+  "expandable": {
+    "more": "подробнее",
+    "less": "скрыть"
+  },
+  "privacy": {
+    "title": "Политика конфиденциальности",
+    "description": "Это временная заглушка для полной политики конфиденциальности."
+  },
+  "terms": {
+    "title": "Условия использования",
+    "description": "Это временная заглушка для условий использования."
+  }
+}

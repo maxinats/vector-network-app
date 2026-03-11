@@ -1,31 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { LandingEmailForm } from "@/components/forms/landing-email-form";
+import { useI18n } from "@/components/providers/language-provider";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 type FeatureIconType = "user-plus" | "link" | "globe" | "tool";
-
-const features = [
-  {
-    icon: "user-plus" as const,
-    title: "Discover builders",
-    text: "Browse profiles of people working on startups, products, and side projects.",
-  },
-  {
-    icon: "link" as const,
-    title: "Connect directly",
-    text: "Reach out to members for ideas, feedback, and collaborations.",
-  },
-  {
-    icon: "globe" as const,
-    title: "Find opportunities",
-    text: "Discover talents, partnerships, and early-stage teams.",
-  },
-  {
-    icon: "tool" as const,
-    title: "Show what you're building",
-    text: "Create your profile and share your ideas with the network.",
-  },
-];
 
 function FeatureIcon({ type }: { type: FeatureIconType }) {
   if (type === "user-plus") {
@@ -80,6 +61,42 @@ function FeatureIcon({ type }: { type: FeatureIconType }) {
 }
 
 export function HomePageSection() {
+  const { t } = useI18n();
+  const features = [
+    {
+      icon: "user-plus" as const,
+      title: t("home.features.discover.title", "Discover builders"),
+      text: t(
+        "home.features.discover.text",
+        "Browse profiles of people working on startups, products, and side projects.",
+      ),
+    },
+    {
+      icon: "link" as const,
+      title: t("home.features.connect.title", "Connect directly"),
+      text: t(
+        "home.features.connect.text",
+        "Reach out to members for ideas, feedback, and collaborations.",
+      ),
+    },
+    {
+      icon: "globe" as const,
+      title: t("home.features.opportunities.title", "Find opportunities"),
+      text: t(
+        "home.features.opportunities.text",
+        "Discover talents, partnerships, and early-stage teams.",
+      ),
+    },
+    {
+      icon: "tool" as const,
+      title: t("home.features.showcase.title", "Show what you're building"),
+      text: t(
+        "home.features.showcase.text",
+        "Create your profile and share your ideas with the network.",
+      ),
+    },
+  ];
+
   return (
     <div className="page-shell">
       <div className="page-gradient" aria-hidden="true" />
@@ -87,19 +104,31 @@ export function HomePageSection() {
         <header className="top-nav top-nav--fixed">
           <div className="top-nav-inner">
             <span className="brand">Vector Network</span>
-            <a href="#access" className="join-pill">
-              Join the network
-            </a>
+            <div className="top-nav-actions">
+              <LanguageSwitcher />
+              <a href="#access" className="join-pill">
+                {t("home.nav.join", "Join the network")}
+              </a>
+            </div>
           </div>
         </header>
 
         <main className="main-content">
           <section className="hero-card">
-            <p className="hero-badge">Free - Builders and enthusiasts</p>
-            <h1 className="hero-title">Connect With Builders</h1>
-            <p className="hero-subtitle">Discover relevant people</p>
+            <p className="hero-badge">
+              {t("home.hero.badge", "Free - Builders and enthusiasts")}
+            </p>
+            <h1 className="hero-title">
+              {t("home.hero.title", "Connect With Builders")}
+            </h1>
+            <p className="hero-subtitle">
+              {t("home.hero.subtitle", "Discover relevant people")}
+            </p>
             <p className="hero-description">
-              A High-Signal Network for Builders and Early Teams
+              {t(
+                "home.hero.description",
+                "A High-Signal Network for Builders and Early Teams",
+              )}
             </p>
 
             <div className="member-chip">
@@ -112,7 +141,12 @@ export function HomePageSection() {
               />
               <div className="member-copy">
                 <strong>Vector Network</strong>
-                <span>Where ambitions meet initiatives</span>
+                <span>
+                  {t(
+                    "home.hero.member_chip_subtitle",
+                    "Where ambitions meet initiatives",
+                  )}
+                </span>
               </div>
             </div>
           </section>
@@ -122,7 +156,7 @@ export function HomePageSection() {
           </section>
 
           <section className="features-section">
-            <h2>What You Can Do Inside</h2>
+            <h2>{t("home.features.title", "What You Can Do Inside")}</h2>
             <div className="feature-grid">
               {features.map((feature) => (
                 <article key={feature.title} className="feature-card">
@@ -137,24 +171,32 @@ export function HomePageSection() {
           </section>
 
           <p className="afterword">
-            A curated network of builders and ambitious people.
+            {t(
+              "home.afterword.line1",
+              "A curated network of builders and ambitious people.",
+            )}
             <br />
-            Profiles are reviewed to keep the network high-signal.
+            {t(
+              "home.afterword.line2",
+              "Profiles are reviewed to keep the network high-signal.",
+            )}
           </p>
         </main>
 
         <footer className="footer">
-          <p>We respect your privacy. No spam, ever.</p>
+          <p>{t("footer.privacy_notice", "We respect your privacy. No spam, ever.")}</p>
           <p>
             <Link href="/privacy" className="inline-link">
-              Privacy Policy
+              {t("footer.privacy_policy", "Privacy Policy")}
             </Link>{" "}
             -{" "}
             <Link href="/terms" className="inline-link">
-              Terms of Service
+              {t("footer.terms", "Terms of Service")}
             </Link>
           </p>
-          <p className="copyright">Vector Network (c) 2026</p>
+          <p className="copyright">
+            {t("footer.copyright", "Vector Network © 2026")}
+          </p>
         </footer>
       </div>
     </div>

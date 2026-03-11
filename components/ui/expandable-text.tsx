@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n } from "@/components/providers/language-provider";
 
 type ExpandableTextProps = {
   text: string;
@@ -14,10 +15,13 @@ export function ExpandableText({
   text,
   className,
   collapseAt = 220,
-  moreLabel = "more",
-  lessLabel = "less",
+  moreLabel,
+  lessLabel,
 }: ExpandableTextProps) {
+  const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
+  const resolvedMoreLabel = moreLabel ?? t("expandable.more", "more");
+  const resolvedLessLabel = lessLabel ?? t("expandable.less", "less");
   const normalizedText = useMemo(() => text.replace(/\r\n/g, "\n").trimEnd(), [text]);
   const isLong = normalizedText.length > collapseAt;
   const collapsedText = useMemo(
@@ -36,7 +40,7 @@ export function ExpandableText({
           className="expandable-inline-toggle"
           onClick={() => setIsExpanded((prev) => !prev)}
         >
-          {isExpanded ? ` ${lessLabel}` : `... ${moreLabel}`}
+          {isExpanded ? ` ${resolvedLessLabel}` : `... ${resolvedMoreLabel}`}
         </button>
       ) : null}
     </p>
