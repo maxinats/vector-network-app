@@ -124,6 +124,7 @@
       "code_resent": "Verification code was sent again."
     },
     "verification_email_label": "Verification email:",
+    "spam_notice": "Be sure to check your Spam folder if the code email does not arrive.",
     "errors": {
       "supabase_not_configured": "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
       "enter_email_password": "Enter email and password.",

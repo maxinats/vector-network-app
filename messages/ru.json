@@ -124,6 +124,7 @@
       "code_resent": "Код подтверждения отправлен повторно."
     },
     "verification_email_label": "Email для подтверждения:",
+    "spam_notice": "\u041e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e \u043f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0441\u043f\u0430\u043c, \u0435\u0441\u043b\u0438 \u043f\u0438\u0441\u044c\u043c\u043e \u0441 \u043a\u043e\u0434\u043e\u043c \u043d\u0435 \u043f\u0440\u0438\u0445\u043e\u0434\u0438\u0442.",
     "errors": {
       "supabase_not_configured": "Supabase не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
       "enter_email_password": "Введите email и пароль.",

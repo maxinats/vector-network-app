@@ -336,6 +336,12 @@ export function EmailPasswordAuthForm({
             {t("auth_form.verification_email_label", "Verification email:")}{" "}
             {verificationEmail}
           </p>
+          <p className="safe-row">
+            {t(
+              "auth_form.spam_notice",
+              "Обязательно проверьте спам, если письмо с кодом не приходит.",
+            )}
+          </p>
           <input
             className="magic-input"
             type="text"
